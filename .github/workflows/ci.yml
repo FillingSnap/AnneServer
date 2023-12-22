@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push: 
+    branches:
+      - 'feature/ci'
+  pull_request:
+    branches: 
+      - 'develop'
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+    
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3.13.0
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: gradle
+    
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+    
+      - name: Gradle Build Action
+        uses: gradle/gradle-build-action@v2.9.0
+        with:
+          arguments: build
