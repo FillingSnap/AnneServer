@@ -19,9 +19,12 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.1.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
 }
 
 tasks.withType<KotlinCompile> {

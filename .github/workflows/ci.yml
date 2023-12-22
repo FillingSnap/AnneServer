@@ -11,7 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-    
+
+      - name: Make yml for Test
+        run: |
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.NAVER }}" | base64 --decode > ./src/main/resources/naver.yml
+        shell: bash
+
       - name: Setup Java JDK
         uses: actions/setup-java@v3.13.0
         with:
