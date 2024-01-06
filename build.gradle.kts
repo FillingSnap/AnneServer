@@ -29,6 +29,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
     runtimeOnly("com.mysql:mysql-connector-j:8.2.0")
+    testRuntimeOnly("com.h2database:h2:2.1.214")
 }
 
 tasks.withType<KotlinCompile> {
