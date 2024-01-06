@@ -15,6 +15,7 @@ jobs:
       - name: Make yml for Test
         run: |
           mkdir -p ./src/main/resources
+          mkdir -p ./src/test/resources
           echo "${{ secrets.MAIN_APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
           echo "${{ secrets.TEST_APPLICATION_YML }}" | base64 --decode > ./src/test/resources/application.yml
           echo "${{ secrets.NAVER_YML }}" | base64 --decode > ./src/main/resources/naver.yml
