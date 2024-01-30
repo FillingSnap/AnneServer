@@ -24,14 +24,16 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.0.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4")
+    implementation("org.springframework.boot:spring-boot-starter-security:3.0.4")
     implementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     implementation("com.aallam.openai:openai-client:3.6.3")
     implementation("io.ktor:ktor-client-okhttp:2.2.4")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
+    implementation("com.google.api-client:google-api-client-jackson2:2.2.0")
     runtimeOnly("com.mysql:mysql-connector-j:8.2.0")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
     testRuntimeOnly("com.h2database:h2:2.1.214")
 }
 
