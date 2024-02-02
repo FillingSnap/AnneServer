@@ -1,7 +1,8 @@
 package com.fillingsnap.server.global.config
 
+import com.fillingsnap.server.domain.user.service.TokenService
 import com.fillingsnap.server.domain.user.service.UserService
-import com.fillingsnap.server.global.component.JwtFilter
+import com.fillingsnap.server.global.component.JwtAuthFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -11,7 +12,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 class SecurityConfig (
 
-    private val userDetailsService: UserService
+    private val tokenService: TokenService,
+
+    private val userService: UserService
 
 ) {
 
@@ -24,10 +27,10 @@ class SecurityConfig (
             it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
         .authorizeHttpRequests {
-            it.requestMatchers("/user/login", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+            it.requestMatchers("/login/oauth2/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
         }
-        .addFilterBefore(JwtFilter(userDetailsService), UsernamePasswordAuthenticationFilter::class.java)
+        .addFilterBefore(JwtAuthFilter(tokenService, userService), UsernamePasswordAuthenticationFilter::class.java)
         .build()!!
 
 }

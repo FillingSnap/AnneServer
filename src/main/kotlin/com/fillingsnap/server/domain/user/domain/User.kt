@@ -18,6 +18,8 @@ class User (
 
     val uid: String,
 
+    val provider: String,
+
     @OneToMany(
         fetch = FetchType.LAZY,
         mappedBy = "user",
