@@ -2,6 +2,8 @@ package com.fillingsnap.server.global.component
 
 import com.fillingsnap.server.domain.user.service.TokenService
 import com.fillingsnap.server.domain.user.service.UserService
+import com.fillingsnap.server.global.exception.CustomException
+import com.fillingsnap.server.global.exception.ErrorCode
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
@@ -27,7 +29,7 @@ class JwtAuthFilter(
             val split = token.split(" ")
             if (split.size == 2 && split[0] == "Bearer" && tokenService.verifyToken(split[1])) {
                 val id: String = tokenService.getId(split[1])
-                val user = userService.loadUserById(id.toLong())
+                val user = userService.loadUserById(id.toLong()) ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
                 val auth = UsernamePasswordAuthenticationToken(
                     user,
