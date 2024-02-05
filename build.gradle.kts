@@ -29,13 +29,10 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     implementation("com.aallam.openai:openai-client:3.6.3")
-    implementation("io.ktor:ktor-client-okhttp:2.2.4")
-    implementation("com.google.api-client:google-api-client-jackson2:2.2.0")
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
     runtimeOnly("com.mysql:mysql-connector-j:8.2.0")
-    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
     testRuntimeOnly("com.h2database:h2:2.1.214")
 }
