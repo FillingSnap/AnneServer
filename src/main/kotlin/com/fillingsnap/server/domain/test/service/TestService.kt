@@ -14,6 +14,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import java.nio.file.Files
@@ -29,7 +30,9 @@ class TestService(
     private val keyId: String,
 
     @Value("\${X-NCP-APIGW-API-KEY}")
-    private val key: String
+    private val key: String,
+
+    private val sendingOperations: SimpMessageSendingOperations
 
 ) {
 
@@ -118,6 +121,7 @@ class TestService(
             )
             text += textResponse.choices[0].message.content
             // todo: 안드로이드에 웹소켓으로 전송해야 함
+            sendingOperations.convertAndSend("/sub/channel/1", textResponse.choices[0].message.content!!)
             println(textResponse.choices[0].message.content)
             println("${text.substring(question.length)}\r")
             if (text.substring(question.length).contains("\\e")) {
