@@ -22,7 +22,7 @@ class JwtAuthenticationEntryPoint: AuthenticationEntryPoint {
     ) {
         val objectMapper = ObjectMapper()
         objectMapper.registerModule(JavaTimeModule())
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
         val error = ErrorCode.INVALID_TOKEN
         response.status = error.status.value()
