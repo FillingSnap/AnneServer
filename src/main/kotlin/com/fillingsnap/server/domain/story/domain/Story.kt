@@ -13,9 +13,9 @@ class Story (
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    val date: LocalDateTime,
-
     val text: String,
+
+    val image: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     val user: User,

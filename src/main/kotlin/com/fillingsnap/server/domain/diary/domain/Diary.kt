@@ -2,6 +2,7 @@ package com.fillingsnap.server.domain.diary.domain
 
 import com.fillingsnap.server.domain.story.domain.Story
 import com.fillingsnap.server.domain.user.domain.User
+import com.fillingsnap.server.global.model.BaseTimeEntity
 import jakarta.persistence.*
 
 @Entity
@@ -13,8 +14,7 @@ class Diary (
 
     val emotion: String,
 
-    @ElementCollection
-    val imageList: List<String>,
+    val content: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     val user: User,
@@ -26,5 +26,5 @@ class Diary (
     )
     val storyList: List<Story> = ArrayList()
 
-) {
+): BaseTimeEntity() {
 }
