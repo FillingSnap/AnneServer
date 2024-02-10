@@ -82,4 +82,6 @@ class LoginService (
         return restTemplate.exchange(resourceUri!!, HttpMethod.GET, entity, JsonNode::class.java).body
     }
 
+    // todo: 토큰 만료 시 refresh 로직 작성 필요
+
 }
