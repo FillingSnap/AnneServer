@@ -1,34 +1,45 @@
 package com.fillingsnap.server.global.component
 
-import com.fillingsnap.server.global.exception.CustomException
-import com.fillingsnap.server.global.exception.ErrorCode
+import com.fillingsnap.server.domain.user.service.TokenService
 import org.springframework.messaging.Message
 import org.springframework.messaging.MessageChannel
+import org.springframework.messaging.MessageDeliveryException
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.messaging.support.ChannelInterceptor
-import org.springframework.messaging.support.MessageHeaderAccessor
 import org.springframework.stereotype.Component
 
 @Component
-class StompHandler: ChannelInterceptor {
+class StompHandler (
 
-    override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
+    private val tokenService: TokenService
+
+): ChannelInterceptor {
+
+    override fun preSend(message: Message<*>, channel: MessageChannel): Message<*> {
         val headerAccessor = StompHeaderAccessor.wrap(message)
         val type = headerAccessor.getHeader("stompCommand").toString()
         if (type == "CONNECT") {
-            // todo: JWT 토큰 체크 후, 에러 처리 필요
             val token = headerAccessor.getNativeHeader("Authorization")
+                ?: throw MessageDeliveryException("UNAUTHORIZED")
 
-            if (token == null) {
-                println("1")
-                throw CustomException(ErrorCode.INVALID_TOKEN)
+            // JWT 토큰 검증
+            val split = token.toString().split(" ")
+            if (!(split.size == 2 && tokenService.verifyToken(split[1]))) {
+                // throw CustomException(ErrorCode.INVALID_TOKEN)
+                throw MessageDeliveryException("UNAUTHORIZED")
             }
 
-            val split = token.toString().split(" ")
+            // 세션에 저장
+            val sessionAttributes = headerAccessor.sessionAttributes
+            sessionAttributes!!["id"] = tokenService.getId(split[1])
+            headerAccessor.sessionAttributes = sessionAttributes
+        } else if (type == "SUBSCRIBE") {
+            val destination = headerAccessor.destination
+            val id = destination!!.substring("/queue/channel/".length)
 
-            if (split.size != 2) {
-                println("2")
-                throw CustomException(ErrorCode.INVALID_TOKEN)
+            // 자신의 uid에 해당하는 채널을 구독하는지 확인
+            if (id != headerAccessor.sessionAttributes!!["id"]) {
+                throw MessageDeliveryException("UNAUTHORIZED")
             }
         }
 

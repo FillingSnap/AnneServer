@@ -1,4 +1,4 @@
-package com.fillingsnap.server.global.component
+package com.fillingsnap.server.global.exception
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature

@@ -15,7 +15,7 @@ class DiaryController (
 
     @GetMapping("test")
     fun test(id: Long) {
-        sendingOperations.convertAndSend("/sub/channel/$id", "hello")
+        sendingOperations.convertAndSend("/queue/channel/$id", "hello")
     }
 
 }

@@ -121,7 +121,7 @@ class TestService(
             )
             text += textResponse.choices[0].message.content
             // todo: 안드로이드에 웹소켓으로 전송해야 함
-            sendingOperations.convertAndSend("/sub/channel/1", textResponse.choices[0].message.content!!)
+            sendingOperations.convertAndSend("/queue/channel/1", textResponse.choices[0].message.content!!)
             println(textResponse.choices[0].message.content)
             println("${text.substring(question.length)}\r")
             if (text.substring(question.length).contains("\\e")) {
