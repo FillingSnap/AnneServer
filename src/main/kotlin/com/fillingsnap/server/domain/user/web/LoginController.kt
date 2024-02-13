@@ -17,8 +17,15 @@ class LoginController (
 
 ) {
 
-    @GetMapping("/code/{registrationId}")
-    fun login(
+    @GetMapping("/code")
+    fun getCodeRedirect(
+        @RequestParam code: String
+    ): ResponseEntity<String> {
+        return ResponseEntity.ok(code)
+    }
+
+    @GetMapping("/{registrationId}")
+    fun getToken(
         @RequestParam code: String,
         @PathVariable("registrationId") registrationId: String
     ): ResponseEntity<TokenDto> {
