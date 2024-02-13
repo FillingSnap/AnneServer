@@ -1,4 +1,4 @@
-package com.fillingsnap.server.global.component
+package com.fillingsnap.server.global.config.websocket
 
 import com.fillingsnap.server.domain.user.service.TokenService
 import org.springframework.messaging.Message
@@ -25,7 +25,6 @@ class StompHandler (
             // JWT 토큰 검증
             val split = token.toString().split(" ")
             if (!(split.size == 2 && tokenService.verifyToken(split[1]))) {
-                // throw CustomException(ErrorCode.INVALID_TOKEN)
                 throw MessageDeliveryException("UNAUTHORIZED")
             }
 

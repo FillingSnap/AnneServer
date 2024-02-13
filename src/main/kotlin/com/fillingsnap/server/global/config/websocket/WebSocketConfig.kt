@@ -1,7 +1,5 @@
-package com.fillingsnap.server.global.config
+package com.fillingsnap.server.global.config.websocket
 
-import com.fillingsnap.server.global.component.StompErrorHandler
-import com.fillingsnap.server.global.component.StompHandler
 import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.simp.config.ChannelRegistration
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker

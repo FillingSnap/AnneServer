@@ -1,5 +1,7 @@
-package com.fillingsnap.server.global.component
+package com.fillingsnap.server.global.config.websocket
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.Message
 import org.springframework.messaging.simp.stomp.StompCommand
@@ -22,11 +24,19 @@ class StompErrorHandler: StompSubProtocolErrorHandler() {
     }
 
     fun errorMessage(message: String): Message<ByteArray> {
-        val accessor = StompHeaderAccessor.create(StompCommand.MESSAGE)
+        val accessor = StompHeaderAccessor.create(StompCommand.ERROR)
         accessor.message = message
         accessor.setLeaveMutable(true)
 
-        return MessageBuilder.createMessage(message.toByteArray(), accessor.messageHeaders)
+        val errorResponse = WebSocketResponseDto(
+            status = WebSocketStatus.ERROR.value,
+            content = message
+        )
+
+        return MessageBuilder.createMessage(
+            Json.encodeToString(errorResponse).toByteArray(),
+            accessor.messageHeaders
+        )
     }
 
 }

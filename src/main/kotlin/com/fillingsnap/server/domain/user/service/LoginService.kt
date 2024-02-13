@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fillingsnap.server.domain.user.dao.UserRepository
 import com.fillingsnap.server.domain.user.domain.User
 import com.fillingsnap.server.domain.user.dto.TokenDto
-import com.fillingsnap.server.global.exception.OAuthErrorHandler
+import com.fillingsnap.server.global.config.security.OAuthErrorHandler
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
