@@ -3,6 +3,7 @@ package com.fillingsnap.server.domain.diary.web
 import com.fillingsnap.server.domain.diary.dto.DiaryWithStudyDto
 import com.fillingsnap.server.domain.diary.dto.SimpleDiaryDto
 import com.fillingsnap.server.domain.diary.service.DiaryService
+import io.swagger.v3.oas.annotations.Operation
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -19,16 +20,19 @@ class DiaryController (
 
 ) {
 
+    @Operation(summary = "웹소켓 테스트(/queue/channel/{id}로 hello 전송, 삭제 예정)")
     @GetMapping("/test")
     fun test(id: Long) {
-        sendingOperations.convertAndSend("/sub/channel/$id", "hello")
+        sendingOperations.convertAndSend("/queue/channel/$id", "hello")
     }
 
-    @GetMapping("/")
+    @Operation(summary = "일기 전체 조회")
+    @GetMapping
     fun getDiaryList(): List<SimpleDiaryDto> {
         return diaryService.getDiaryList()
     }
 
+    @Operation(summary = "일기 단일 조회")
     @GetMapping("/{id}")
     fun getDiaryList(@PathVariable("id") id: Long): DiaryWithStudyDto {
         return diaryService.getDiaryById(id)

@@ -2,6 +2,7 @@ package com.fillingsnap.server.domain.user.web
 
 import com.fillingsnap.server.domain.user.service.LoginService
 import com.fillingsnap.server.domain.user.dto.TokenDto
+import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -17,6 +18,7 @@ class LoginController (
 
 ) {
 
+    @Operation(summary = "OAuth2 코드 발급(리다이렉트)")
     @GetMapping("/code")
     fun getCodeRedirect(
         @RequestParam code: String
@@ -24,6 +26,7 @@ class LoginController (
         return ResponseEntity.ok(code)
     }
 
+    @Operation(summary = "로그인")
     @GetMapping("/{registrationId}")
     fun getToken(
         @RequestParam code: String,
