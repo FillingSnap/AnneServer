@@ -20,7 +20,7 @@ class TestController(
     }
 
     @GetMapping("/openai")
-    suspend fun openai(): ResponseEntity<String> {
+    fun openai(): ResponseEntity<Unit> {
         return ResponseEntity.ok().body(testService.openAI())
     }
 

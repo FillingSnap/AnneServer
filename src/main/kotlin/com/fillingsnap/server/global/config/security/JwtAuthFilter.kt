@@ -1,23 +1,16 @@
-package com.fillingsnap.server.global.component
+package com.fillingsnap.server.global.config.security
 
 import com.fillingsnap.server.domain.user.service.TokenService
-import com.fillingsnap.server.domain.user.service.UserService
-import com.fillingsnap.server.global.exception.CustomException
-import com.fillingsnap.server.global.exception.ErrorCode
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.stereotype.Component
 import org.springframework.web.filter.GenericFilterBean
 
 class JwtAuthFilter(
 
-    private val tokenService: TokenService,
-
-    private val userService: UserService
+    private val tokenService: TokenService
 
 ): GenericFilterBean() {
 
