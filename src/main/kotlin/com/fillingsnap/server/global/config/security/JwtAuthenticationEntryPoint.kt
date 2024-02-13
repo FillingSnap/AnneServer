@@ -1,4 +1,4 @@
-package com.fillingsnap.server.global.component
+package com.fillingsnap.server.global.config.security
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
