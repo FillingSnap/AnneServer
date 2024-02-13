@@ -31,7 +31,7 @@ class LoginService (
         val uid = userResourceNode.get("id").asText()
         val nickname = userResourceNode.get("name").asText()
 
-        var user = userRepository.findByUidAndProvider("uid", registrationId)
+        var user = userRepository.findByUidAndProvider(uid, registrationId)
         if (user == null) {
            user = userRepository.save(
                User(
