@@ -20,13 +20,13 @@ class StoryController (
     @Operation(summary = "스토리 단일 조회")
     @GetMapping("/{id}")
     fun getStoryById(@PathVariable id: Long): ResponseEntity<SimpleStudyDto> {
-        return ResponseEntity.ok(storyService.getStoryById(id))
+        return ResponseEntity.ok().body(storyService.getStoryById(id))
     }
 
     @Operation(summary = "오늘 생성된 스토리 조회(일기 생성 전)")
     @GetMapping("/list/today")
     fun getTodayStoryList(): ResponseEntity<List<SimpleStudyDto>> {
-        return ResponseEntity.ok(storyService.getTodayStoryList())
+        return ResponseEntity.ok().body(storyService.getTodayStoryList())
     }
 
 }

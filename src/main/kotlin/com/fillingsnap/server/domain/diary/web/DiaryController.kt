@@ -4,6 +4,8 @@ import com.fillingsnap.server.domain.diary.dto.DiaryWithStudyDto
 import com.fillingsnap.server.domain.diary.dto.SimpleDiaryDto
 import com.fillingsnap.server.domain.diary.service.DiaryService
 import io.swagger.v3.oas.annotations.Operation
+import org.apache.coyote.Response
+import org.springframework.http.ResponseEntity
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,14 +30,14 @@ class DiaryController (
 
     @Operation(summary = "일기 전체 조회")
     @GetMapping
-    fun getDiaryList(): List<SimpleDiaryDto> {
-        return diaryService.getDiaryList()
+    fun getDiaryList(): ResponseEntity<List<SimpleDiaryDto>> {
+        return ResponseEntity.ok().body(diaryService.getDiaryList())
     }
 
     @Operation(summary = "일기 단일 조회")
     @GetMapping("/{id}")
-    fun getDiaryList(@PathVariable("id") id: Long): DiaryWithStudyDto {
-        return diaryService.getDiaryById(id)
+    fun getDiaryList(@PathVariable("id") id: Long): ResponseEntity<DiaryWithStudyDto> {
+        return  ResponseEntity.ok().body(diaryService.getDiaryById(id))
     }
 
 }

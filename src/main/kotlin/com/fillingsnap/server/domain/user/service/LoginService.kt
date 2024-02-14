@@ -42,7 +42,7 @@ class LoginService (
            )
         }
 
-        return tokenService.generateToken(user.id!!.toString())
+        return tokenService.generateTokenAndRefreshToken(user.id!!.toString())
     }
 
     fun getAccessToken(code: String, registrationId: String): String {
