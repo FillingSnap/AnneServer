@@ -26,7 +26,7 @@ class SecurityConfig (
             it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
         .authorizeHttpRequests {
-            it.requestMatchers("/ws", "/diary/test", "/user/test", "/error", "/login/oauth2/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+            it.requestMatchers("/ws", "/diary/test", "/user/refresh", "/error", "/login/oauth2/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
         }
         .addFilterBefore(JwtAuthFilter(tokenService), UsernamePasswordAuthenticationFilter::class.java)
