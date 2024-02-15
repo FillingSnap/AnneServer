@@ -5,17 +5,22 @@ import com.fillingsnap.server.domain.story.dto.SimpleStudyDto
 import com.fillingsnap.server.domain.user.domain.User
 import com.fillingsnap.server.global.exception.CustomException
 import com.fillingsnap.server.global.exception.ErrorCode
+import com.fillingsnap.server.infra.oracle.ObjectStorageService
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-@Service
-class StoryService (
 
-    private val storyRepository: StoryRepository
+@Service
+class StoryService(
+
+    private val storyRepository: StoryRepository,
+
+    private val objectStorageService: ObjectStorageService
 
 ) {
 
@@ -40,6 +45,10 @@ class StoryService (
         return storyRepository.findAllByCreatedAtBetween(startDateTime, endDateTime).map {
             SimpleStudyDto(it)
         }
+    }
+
+    fun uploadFile(file: MultipartFile): String {
+        return objectStorageService.uploadFile(file)
     }
 
 }

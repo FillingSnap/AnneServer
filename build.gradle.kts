@@ -20,6 +20,13 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("com.oracle.oci.sdk:oci-java-sdk-bom:3.34.1")
+        mavenBom("com.oracle.oci.sdk:oci-java-sdk-common-httpclient-jersey:3.34.1")
+    }
+}
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web:3.1.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.0.4")
@@ -32,9 +39,19 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     implementation("com.aallam.openai:openai-client:3.6.3")
     implementation("io.ktor:ktor-client-okhttp:2.2.4")
+
+    implementation("org.slf4j:slf4j-api:2.0.12")
+    testImplementation("org.slf4j:slf4j-simple:2.0.12")
+
+    implementation("com.oracle.oci.sdk:oci-java-sdk-addons-resteasy-client-configurator")
+    implementation("com.oracle.oci.sdk:oci-java-sdk-objectstorage")
+    implementation("com.oracle.oci.sdk:oci-java-sdk-common-httpclient-jersey")
+    implementation("javax.xml.bind:jaxb-api:2.3.1")
+
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+
     runtimeOnly("com.mysql:mysql-connector-j:8.2.0")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
