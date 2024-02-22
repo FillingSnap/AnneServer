@@ -1,6 +1,9 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - 'feature/jwt-refectoring'
   pull_request:
     branches:
       - 'develop'
@@ -14,9 +17,11 @@ jobs:
 
       - name: Make yml for Test
         run: |
-          mkdir -p ./src/main/resources
+          mkdir -p ./src/main/resources/oci
           mkdir -p ./src/test/resources
           echo "${{ secrets.MAIN_APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
+          echo "${{ secrets.OCI_CONFIG }}" | base64 --decode > ./src/main/resources/oci/config
+          echo "${{ secrets.OCI_PRIVATE_PEM }}" | base64 --decode > ./src/main/resources/oci/private.pem
           echo "${{ secrets.TEST_APPLICATION_YML }}" | base64 --decode > ./src/test/resources/application.yml
           echo "${{ secrets.NAVER_YML }}" | base64 --decode > ./src/main/resources/naver.yml
         shell: bash
