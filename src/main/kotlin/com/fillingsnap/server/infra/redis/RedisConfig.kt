@@ -20,7 +20,13 @@ class RedisConfig(
     @Bean
     fun redisConnectionFactory() : LettuceConnectionFactory {
         val host = env.getProperty("spring.data.redis.host")!!
+        println("!!!")
+        println(host)
+        println("!!!")
         val port = env.getProperty("spring.data.redis.port")!!.toInt()
+        println("!!!")
+        println(port)
+        println("!!!")
         return LettuceConnectionFactory(host, port)
     }
 
