@@ -9,7 +9,6 @@ import com.fillingsnap.server.global.exception.ErrorCode
 import com.fillingsnap.server.infra.redis.RedisDao
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Value
@@ -36,12 +35,21 @@ class JwtProvider (
 
 ) {
 
+    @PostConstruct
+    private fun init() {
+        secretKey = Base64.getEncoder().encodeToString(secretKey.toByteArray())
+    }
+
     fun generateTokenAndRefreshToken(id: String, provider: String, uid: String): LoginDto {
         val user = userService.loadUserById(id.toLong())
 
-        val tokenClaims = Jwts.claims().setSubject(id)
-        tokenClaims.putAll(mapOf(Pair("provider", provider), Pair("uid", uid)))
-        val refreshClaims = Jwts.claims().setSubject(id)
+        val tokenClaims = Jwts.claims()
+            .subject(id)
+            .add(mapOf(Pair("provider", provider), Pair("uid", uid)))
+            .build()
+        val refreshClaims = Jwts.claims()
+            .subject(id)
+            .build()
 
         val token = generateToken(tokenPeriod, tokenClaims)
         val refresh = generateToken(refreshPeriod, refreshClaims)
@@ -62,8 +70,10 @@ class JwtProvider (
         }
 
         val user = userService.loadUserById(id.toLong())
-        val claims = Jwts.claims().setSubject(id)
-        claims.putAll(mapOf(Pair("provider", user.provider), Pair("uid", user.uid)))
+        val claims = Jwts.claims()
+            .subject(id)
+            .add(mapOf(Pair("provider", user.provider), Pair("uid", user.uid)))
+            .build()
 
         return RefreshTokenDto(generateToken(tokenPeriod, claims))
     }
@@ -71,10 +81,10 @@ class JwtProvider (
     fun generateToken(period: Long, claims: Claims): String {
         val now = Date()
         return Jwts.builder()
-            .setClaims(claims)
-            .setIssuedAt(now)
-            .setExpiration(Date(now.time + period))
-            .signWith(Keys.hmacShaKeyFor(secretKey.toByteArray(Charsets.UTF_8)), SignatureAlgorithm.HS256)
+            .claims(claims)
+            .issuedAt(now)
+            .expiration(Date(now.time + period))
+            .signWith(Keys.hmacShaKeyFor(secretKey.toByteArray(Charsets.UTF_8)))
             .compact()
     }
 
@@ -82,15 +92,15 @@ class JwtProvider (
         return try {
             val user = userService.loadUserById(getId(token).toLong())
 
-            val claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey.toByteArray(Charsets.UTF_8))
+            val claims = Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(secretKey.toByteArray(Charsets.UTF_8)))
                 .build()
-                .parseClaimsJws(token)
-            if (claims.body["provider"] != user.provider || claims.body["uid"] != user.uid) {
+                .parseSignedClaims(token)
+            if (claims.payload["provider"] != user.provider || claims.payload["uid"] != user.uid) {
                 return false
             }
 
-            return claims.body
+            return claims.payload
                 .expiration
                 .after(Date())
         } catch (e: Exception) {
@@ -100,11 +110,11 @@ class JwtProvider (
 
     fun getId(token: String): String {
         return try {
-            Jwts.parserBuilder()
-                .setSigningKey(secretKey.toByteArray(Charsets.UTF_8))
+            Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(secretKey.toByteArray(Charsets.UTF_8)))
                 .build()
-                .parseClaimsJws(token)
-                .body
+                .parseSignedClaims(token)
+                .payload
                 .subject
         } catch (e: Exception) {
             println(e)

@@ -48,9 +48,9 @@ dependencies {
     implementation("com.oracle.oci.sdk:oci-java-sdk-common-httpclient-jersey")
     implementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
 
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    implementation("io.jsonwebtoken:jjwt-api:0.12.3")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.4")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.3")
 
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
