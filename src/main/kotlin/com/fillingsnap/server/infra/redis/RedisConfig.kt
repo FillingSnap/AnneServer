@@ -1,25 +1,26 @@
 package com.fillingsnap.server.infra.redis
 
-import org.springframework.context.EnvironmentAware
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.PropertySource
 import org.springframework.core.env.Environment
-import org.springframework.core.env.get
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories
 import org.springframework.data.redis.serializer.StringRedisSerializer
 
 @Configuration
-@PropertySource("classpath:application.yml")
-class RedisConfig: EnvironmentAware {
+@EnableRedisRepositories
+class RedisConfig(
 
-    private var env: Environment? = null
+    private val env: Environment
+
+) {
 
     @Bean
     fun redisConnectionFactory() : LettuceConnectionFactory {
-        val host = env!!.getProperty("spring.data.redis.host")!!
-        val port = env!!.getProperty("spring.data.redis.port")!!.toInt()
+        val host = env.getProperty("spring.data.redis.host")!!
+        val port = env.getProperty("spring.data.redis.port")!!.toInt()
+
         return LettuceConnectionFactory(host, port)
     }
 
@@ -34,10 +35,6 @@ class RedisConfig: EnvironmentAware {
         redisTemplate.connectionFactory = redisConnectionFactory()
 
         return redisTemplate
-    }
-
-    override fun setEnvironment(environment: Environment) {
-        this.env = environment
     }
 
 }
