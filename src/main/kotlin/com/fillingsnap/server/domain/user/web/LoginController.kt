@@ -1,7 +1,7 @@
 package com.fillingsnap.server.domain.user.web
 
 import com.fillingsnap.server.domain.user.service.LoginService
-import com.fillingsnap.server.domain.user.dto.TokenDto
+import com.fillingsnap.server.domain.user.dto.LoginDto
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -31,7 +31,7 @@ class LoginController (
     fun getToken(
         @RequestParam code: String,
         @PathVariable("registrationId") registrationId: String
-    ): ResponseEntity<TokenDto> {
+    ): ResponseEntity<LoginDto> {
         return ResponseEntity.ok(loginService.login(code, registrationId))
     }
 
