@@ -13,6 +13,8 @@ WORKDIR /app
 RUN adduser --system --group app-api
 
 COPY --from=build --chown=app-api:app-api /build/build/libs/*.jar ./app.jar
+COPY --from=build --chown=app-api:app-api /build/src/main/resources/oci/config ./config
+COPY --from=build --chown=app-api:app-api /build/src/main/resources/oci/private.pem ./private.pem
 
 EXPOSE 8080
 USER app-api
