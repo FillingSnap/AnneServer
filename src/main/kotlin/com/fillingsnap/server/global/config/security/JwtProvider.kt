@@ -11,7 +11,7 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -20,20 +20,19 @@ import java.util.*
 @Service
 class JwtProvider (
 
-    @Value("\${spring.jwt.secret}")
-    private var secretKey: String,
-
-    @Value("\${spring.jwt.token.access-expiration-time}")
-    private val tokenPeriod: Long,
-
-    @Value("\${spring.jwt.token.refresh-expiration-time}")
-    private val refreshPeriod: Long,
-
     private val userService: UserService,
 
-    private val redisDao: RedisDao
+    private val redisDao: RedisDao,
+
+    private val env: Environment
 
 ) {
+
+    private val secretKey = env.getProperty("spring.jwt.secret")!!
+
+    private val tokenPeriod = env.getProperty("spring.jwt.token.access-expiration-time")!!.toLong()
+
+    private val refreshPeriod = env.getProperty("spring.jwt.token.refresh-expiration-time")!!.toLong()
 
     fun generateTokenAndRefreshToken(id: String, provider: String, uid: String): LoginDto {
         val user = userService.loadUserById(id.toLong())
