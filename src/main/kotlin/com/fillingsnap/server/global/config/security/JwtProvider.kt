@@ -117,7 +117,6 @@ class JwtProvider (
                 .payload
                 .subject
         } catch (e: Exception) {
-            println(e)
             throw CustomException(ErrorCode.INVALID_TOKEN)
         }
     }
