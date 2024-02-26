@@ -1,8 +1,8 @@
 package com.fillingsnap.server.domain.story.web
 
 import com.fillingsnap.server.domain.story.dto.SimpleStudyDto
+import com.fillingsnap.server.domain.story.dto.StoryCreateRequestDto
 import com.fillingsnap.server.domain.story.service.StoryService
-import com.oracle.bmc.objectstorage.responses.CreatePreauthenticatedRequestResponse
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -29,12 +29,13 @@ class StoryController (
         return ResponseEntity.ok().body(storyService.getTodayStoryList())
     }
 
-    @Operation(summary = "오라클 오브젝트 스토리지 업로드 테스트")
-    @PostMapping("/upload", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun challengeRegister(
-        @RequestPart(value="image") image: MultipartFile,
-    ): ResponseEntity<String> {
-        return ResponseEntity.ok().body(storyService.uploadFile(image))
+    @Operation(summary = "스토리 생성")
+    @PostMapping("/create", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun createStory(
+        @RequestPart(value = "image") image: MultipartFile,
+        @RequestPart(value = "request") request: StoryCreateRequestDto
+    ): ResponseEntity<SimpleStudyDto> {
+        return ResponseEntity.ok().body(storyService.createStory(image, request))
     }
 
 }
