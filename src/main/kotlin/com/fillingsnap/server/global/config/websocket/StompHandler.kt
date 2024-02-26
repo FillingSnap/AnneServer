@@ -1,6 +1,6 @@
 package com.fillingsnap.server.global.config.websocket
 
-import com.fillingsnap.server.domain.user.service.TokenService
+import com.fillingsnap.server.global.config.security.JwtProvider
 import org.springframework.messaging.Message
 import org.springframework.messaging.MessageChannel
 import org.springframework.messaging.MessageDeliveryException
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 @Component
 class StompHandler (
 
-    private val tokenService: TokenService
+    private val tokenService: JwtProvider
 
 ): ChannelInterceptor {
 

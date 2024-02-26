@@ -11,7 +11,7 @@ class Story (
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long? = null,
 
     val text: String,
 
@@ -21,7 +21,7 @@ class Story (
     val user: User,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    val diary: Diary
+    val diary: Diary? = null
 
 ): BaseTimeEntity() {
 }

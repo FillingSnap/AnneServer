@@ -3,8 +3,9 @@ package com.fillingsnap.server.domain.user.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fillingsnap.server.domain.user.dao.UserRepository
 import com.fillingsnap.server.domain.user.domain.User
-import com.fillingsnap.server.domain.user.dto.TokenDto
+import com.fillingsnap.server.domain.user.dto.LoginDto
 import com.fillingsnap.server.global.config.security.OAuthErrorHandler
+import com.fillingsnap.server.global.config.security.JwtProvider
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -21,11 +22,11 @@ class LoginService (
 
     private val userRepository: UserRepository,
 
-    private val tokenService: TokenService
+    private val tokenService: JwtProvider
 
 ) {
 
-    fun login(code: String, registrationId: String): TokenDto {
+    fun login(code: String, registrationId: String): LoginDto {
         val accessToken = getAccessToken(code, registrationId)
         val userResourceNode = getUserResource(accessToken, registrationId)!!
         val uid = userResourceNode.get("id").asText()
@@ -42,7 +43,7 @@ class LoginService (
            )
         }
 
-        return tokenService.generateTokenAndRefreshToken(user.id!!.toString())
+        return tokenService.generateTokenAndRefreshToken(user.id!!.toString(), user.provider, user.uid)
     }
 
     fun getAccessToken(code: String, registrationId: String): String {
@@ -81,7 +82,5 @@ class LoginService (
         val entity = HttpEntity(null, headers)
         return restTemplate.exchange(resourceUri!!, HttpMethod.GET, entity, JsonNode::class.java).body
     }
-
-    // todo: 토큰 만료 시 refresh 로직 작성 필요
 
 }
