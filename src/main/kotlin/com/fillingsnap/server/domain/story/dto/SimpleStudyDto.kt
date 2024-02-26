@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class SimpleStudyDto (
 
-    val id: Long,
+    val id: Long?,
 
     val text: String,
 

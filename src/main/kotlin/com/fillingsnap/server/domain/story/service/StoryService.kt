@@ -1,7 +1,9 @@
 package com.fillingsnap.server.domain.story.service
 
 import com.fillingsnap.server.domain.story.dao.StoryRepository
+import com.fillingsnap.server.domain.story.domain.Story
 import com.fillingsnap.server.domain.story.dto.SimpleStudyDto
+import com.fillingsnap.server.domain.story.dto.StoryCreateRequestDto
 import com.fillingsnap.server.domain.user.domain.User
 import com.fillingsnap.server.global.exception.CustomException
 import com.fillingsnap.server.global.exception.ErrorCode
@@ -45,6 +47,18 @@ class StoryService(
         return storyRepository.findAllByCreatedAtBetween(startDateTime, endDateTime).map {
             SimpleStudyDto(it)
         }
+    }
+
+    fun createStory(file: MultipartFile, request: StoryCreateRequestDto): SimpleStudyDto {
+        val user = SecurityContextHolder.getContext().authentication.principal as User
+        val image = objectStorageService.uploadFile(file)
+        val story = Story(
+            text = request.text,
+            image = image,
+            user = user,
+        )
+
+        return SimpleStudyDto(storyRepository.save(story))
     }
 
     fun uploadFile(file: MultipartFile): String {
