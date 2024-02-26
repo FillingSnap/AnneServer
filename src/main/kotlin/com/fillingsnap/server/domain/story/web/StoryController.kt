@@ -31,7 +31,7 @@ class StoryController (
     }
 
     @Operation(summary = "스토리 생성")
-    @PostMapping("/create")
+    @PostMapping("/create", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createStory(
         @RequestPart(value = "image") image: MultipartFile,
         @RequestPart(value = "request") request: StoryCreateRequestDto
