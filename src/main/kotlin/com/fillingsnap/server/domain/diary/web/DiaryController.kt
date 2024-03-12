@@ -3,6 +3,8 @@ package com.fillingsnap.server.domain.diary.web
 import com.fillingsnap.server.domain.diary.dto.DiaryWithStudyDto
 import com.fillingsnap.server.domain.diary.dto.SimpleDiaryDto
 import com.fillingsnap.server.domain.diary.service.DiaryService
+import com.fillingsnap.server.global.config.websocket.WebSocketResponseDto
+import com.fillingsnap.server.global.config.websocket.WebSocketStatus
 import io.swagger.v3.oas.annotations.Operation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,9 +47,15 @@ class DiaryController (
             )
 
             for (string in list) {
-                sendingOperations.convertAndSend("/queue/channel/$id", string)
+                val response = WebSocketResponseDto(
+                    status = WebSocketStatus.SUCCESS.value,
+                    content = string
+                )
+
+                sendingOperations.convertAndSend("/queue/channel/$id", response)
                 TimeUnit.SECONDS.sleep(1)
             }
+            sendingOperations.convertAndSend("/queue/channel/$id", WebSocketResponseDto(WebSocketStatus.EOF.value, null))
         }
     }
 
