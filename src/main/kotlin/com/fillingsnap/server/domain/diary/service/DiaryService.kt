@@ -75,6 +75,9 @@ class DiaryService (
         }
 
         val todayStoryList = storyRepository.findAllByCreatedAtBetween(startDateTime, endDateTime)
+        if (todayStoryList.isEmpty()) {
+            throw CustomException(ErrorCode.STORY_NOT_FOUND)
+        }
 
         val imageTextList = todayStoryList.map {
             Pair(Base64.getEncoder().encodeToString(imageResize(it.image)), it.text)
