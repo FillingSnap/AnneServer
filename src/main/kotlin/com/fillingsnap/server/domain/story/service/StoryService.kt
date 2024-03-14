@@ -1,5 +1,6 @@
 package com.fillingsnap.server.domain.story.service
 
+import com.fillingsnap.server.domain.diary.dao.DiaryRepository
 import com.fillingsnap.server.domain.story.dao.StoryRepository
 import com.fillingsnap.server.domain.story.domain.Story
 import com.fillingsnap.server.domain.story.dto.SimpleStudyDto
@@ -22,6 +23,8 @@ class StoryService(
 
     private val storyRepository: StoryRepository,
 
+    private val diaryRepository: DiaryRepository,
+
     private val objectStorageService: ObjectStorageService
 
 ) {
@@ -41,9 +44,16 @@ class StoryService(
     }
 
     fun getTodayStoryList(): List<SimpleStudyDto> {
-        // todo: 당일 자 일기가 생성되었을 경우 에러
+        val user = SecurityContextHolder.getContext().authentication.principal as User
+
         val startDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0))
         val endDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59))
+        val diary = diaryRepository.findByUserAndCreatedAtBetween(user, startDateTime, endDateTime)
+
+        if (diary != null) {
+            throw CustomException(ErrorCode.TODAY_DIARY_ALREADY_EXIST)
+        }
+
         return storyRepository.findAllByCreatedAtBetween(startDateTime, endDateTime).map {
             SimpleStudyDto(it)
         }

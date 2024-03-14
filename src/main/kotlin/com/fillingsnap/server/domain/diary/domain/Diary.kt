@@ -10,10 +10,11 @@ class Diary (
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long? = null,
 
     val emotion: String,
 
+    @Column(columnDefinition = "LONGTEXT")
     val content: String,
 
     @ManyToOne(fetch = FetchType.LAZY)

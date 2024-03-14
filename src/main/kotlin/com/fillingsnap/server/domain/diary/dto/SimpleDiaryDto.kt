@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class SimpleDiaryDto(
 
-    val id: Long,
+    val id: Long?,
 
     val emotion: String,
 
