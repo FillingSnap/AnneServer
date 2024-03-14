@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit
@@ -26,6 +27,12 @@ class DiaryController (
     private val diaryService: DiaryService
 
 ) {
+
+    @Operation(summary = "일기 생성")
+    @PostMapping("/create")
+    fun createDiary(): ResponseEntity<Unit> {
+        return ResponseEntity.ok().body(diaryService.createDiary())
+    }
 
     @Operation(summary = "웹소켓 테스트(/queue/channel/{id}로 hello 전송, 삭제 예정)")
     @GetMapping("/test")
