@@ -13,6 +13,7 @@ class Story (
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
+    @Column(columnDefinition = "LONGTEXT")
     val text: String,
 
     val image: String,
