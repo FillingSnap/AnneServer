@@ -27,7 +27,6 @@ class StompHandler (
             if (!(split.size == 2 && tokenService.verifyToken(split[1]))) {
                 throw MessageDeliveryException("UNAUTHORIZED")
             }
-            println("CONNECTED")
 
             // 세션에 저장
             val sessionAttributes = headerAccessor.sessionAttributes
@@ -41,8 +40,6 @@ class StompHandler (
             if (id != headerAccessor.sessionAttributes!!["id"]) {
                 throw MessageDeliveryException("UNAUTHORIZED")
             }
-        } else if (type == "DISCONNECT") {
-            println("DISCONNECTED")
         }
 
         return message
