@@ -40,6 +40,8 @@ class StompHandler (
             if (id != headerAccessor.sessionAttributes!!["id"]) {
                 throw MessageDeliveryException("UNAUTHORIZED")
             }
+        } else if (type == "DISCONNECT") {
+            println("DISCONNECTED")
         }
 
         return message
