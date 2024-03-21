@@ -29,7 +29,7 @@ class StompErrorHandler: StompSubProtocolErrorHandler() {
         accessor.setLeaveMutable(true)
 
         val errorResponse = WebSocketResponseDto(
-            status = WebSocketStatus.ERROR.value,
+            status = WebSocketStatus.ERROR,
             content = message
         )
 

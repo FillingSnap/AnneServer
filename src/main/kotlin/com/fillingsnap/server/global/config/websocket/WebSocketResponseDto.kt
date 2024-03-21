@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class WebSocketResponseDto (
 
-    val status: String,
+    val status: WebSocketStatus,
 
     val content: String?
 
