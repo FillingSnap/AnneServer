@@ -35,20 +35,6 @@ class ObjectStorageService (
     private val url = "https://" + namespace + ".objectstorage.ap-chuncheon-1.oci.customer-oci.com/n/" +
             namespace + "/b/" + bucketName + "/o/"
 
-    fun getObject(): InputStream {
-        val image = "https://axxr4m7mermn.objectstorage.ap-chuncheon-1.oci.customer-oci.com/n/axxr4m7mermn/b/filling-snap/o/1%2F2024-02-27T07%3A31%3A16.186059900.jpeg"
-
-        val request = GetObjectRequest.builder()
-            .namespaceName(namespace)
-            .bucketName(bucketName)
-            .objectName(URLDecoder.decode(image.substring(url.length), "UTF-8"))
-            .build()
-
-        val response = client.getObject(request)
-
-        return response.inputStream
-    }
-
     fun getObject(image: String): InputStream {
         val request = GetObjectRequest.builder()
             .namespaceName(namespace)

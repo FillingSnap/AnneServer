@@ -6,6 +6,7 @@ enum class WebSocketStatus (
 
 ) {
 
+    UUID("UUID"),
     SUCCESS("SUCCESS"),
     ERROR("ERROR"),
     EOF("EOF")

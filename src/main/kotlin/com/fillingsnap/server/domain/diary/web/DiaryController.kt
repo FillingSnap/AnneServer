@@ -1,5 +1,6 @@
 package com.fillingsnap.server.domain.diary.web
 
+import com.fillingsnap.server.domain.diary.dto.DiaryCreateRequestDto
 import com.fillingsnap.server.domain.diary.dto.DiaryWithStudyDto
 import com.fillingsnap.server.domain.diary.dto.SimpleDiaryDto
 import com.fillingsnap.server.domain.diary.service.DiaryService
@@ -14,6 +15,7 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit
@@ -29,9 +31,21 @@ class DiaryController (
 ) {
 
     @Operation(summary = "일기 생성")
+    @PostMapping("/generate")
+    fun generateDiary(): ResponseEntity<Unit> {
+        return ResponseEntity.ok().body(diaryService.generateDiary())
+    }
+
+    @Operation(summary = "임시 일기 조회")
+    @GetMapping("/temporal/{uuid}")
+    fun getTemporalDiary(@PathVariable("uuid") uuid: String): ResponseEntity<String> {
+        return ResponseEntity.ok().body(diaryService.getTemporalDiary(uuid))
+    }
+
+    @Operation(summary = "일기 저장")
     @PostMapping("/create")
-    fun createDiary(): ResponseEntity<Unit> {
-        return ResponseEntity.ok().body(diaryService.createDiary())
+    fun createDiary(@RequestBody request: DiaryCreateRequestDto): ResponseEntity<SimpleDiaryDto> {
+        return ResponseEntity.ok().body(diaryService.createDiary(request))
     }
 
     @Operation(summary = "웹소켓 테스트(/queue/channel/{id}로 hello 전송, 삭제 예정)")
@@ -55,14 +69,20 @@ class DiaryController (
 
             for (string in list) {
                 val response = WebSocketResponseDto(
-                    status = WebSocketStatus.SUCCESS.value,
+                    status = WebSocketStatus.SUCCESS,
                     content = string
                 )
 
                 sendingOperations.convertAndSend("/queue/channel/$id", response)
                 TimeUnit.SECONDS.sleep(1)
             }
-            sendingOperations.convertAndSend("/queue/channel/$id", WebSocketResponseDto(WebSocketStatus.EOF.value, null))
+            sendingOperations.convertAndSend(
+                "/queue/channel/$id",
+                WebSocketResponseDto(
+                    WebSocketStatus.EOF,
+                    null
+                )
+            )
         }
     }
 
