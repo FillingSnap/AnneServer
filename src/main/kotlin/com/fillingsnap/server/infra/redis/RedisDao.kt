@@ -7,10 +7,6 @@ import java.time.Duration
 
 @Component
 class RedisDao(private val redisTemplate: RedisTemplate<String, String>) {
-    fun setValues(key: String, data: String) {
-        val values = redisTemplate.opsForValue()
-        values[key] = data
-    }
 
     fun setValues(key: String, data: String, duration: Duration) {
         val values = redisTemplate.opsForValue()
@@ -25,4 +21,5 @@ class RedisDao(private val redisTemplate: RedisTemplate<String, String>) {
     fun deleteValues(key: String) {
         redisTemplate.delete(key)
     }
+
 }

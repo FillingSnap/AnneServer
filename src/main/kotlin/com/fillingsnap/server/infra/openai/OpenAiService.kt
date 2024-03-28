@@ -101,7 +101,7 @@ class OpenAiService (
             )
             text += textResponse.choices[0].message.content
             val response = WebSocketResponseDto(
-                status = WebSocketStatus.SUCCESS.value,
+                status = WebSocketStatus.SUCCESS,
                 content = textResponse.choices[0].message.content
             )
 
