@@ -1,7 +1,7 @@
 package com.fillingsnap.server.domain.story.web
 
 import com.fillingsnap.server.domain.story.dto.SimpleStudyDto
-import com.fillingsnap.server.domain.story.dto.StoryCreateRequestDto
+import com.fillingsnap.server.domain.story.dto.request.StoryCreateRequestDto
 import com.fillingsnap.server.domain.story.service.StoryService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.MediaType

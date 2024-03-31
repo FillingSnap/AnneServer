@@ -1,4 +1,4 @@
-package com.fillingsnap.server.global.config.security
+package com.fillingsnap.server.global.auth.jwt
 
 import com.fillingsnap.server.domain.user.dto.RefreshTokenDto
 import com.fillingsnap.server.domain.user.dto.LoginDto
@@ -18,7 +18,7 @@ import java.time.Duration
 import java.util.*
 
 @Service
-class JwtProvider (
+class JwtAuthenticationService (
 
     @Value("\${spring.jwt.secret}")
     private var secretKey: String,

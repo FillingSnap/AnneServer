@@ -4,7 +4,7 @@ import com.fillingsnap.server.domain.diary.dao.DiaryRepository
 import com.fillingsnap.server.domain.story.dao.StoryRepository
 import com.fillingsnap.server.domain.story.domain.Story
 import com.fillingsnap.server.domain.story.dto.SimpleStudyDto
-import com.fillingsnap.server.domain.story.dto.StoryCreateRequestDto
+import com.fillingsnap.server.domain.story.dto.request.StoryCreateRequestDto
 import com.fillingsnap.server.domain.user.domain.User
 import com.fillingsnap.server.global.exception.CustomException
 import com.fillingsnap.server.global.exception.ErrorCode

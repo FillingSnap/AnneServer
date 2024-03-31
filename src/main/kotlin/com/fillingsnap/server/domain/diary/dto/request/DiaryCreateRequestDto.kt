@@ -1,4 +1,4 @@
-package com.fillingsnap.server.domain.diary.dto
+package com.fillingsnap.server.domain.diary.dto.request
 
 data class DiaryCreateRequestDto (
 

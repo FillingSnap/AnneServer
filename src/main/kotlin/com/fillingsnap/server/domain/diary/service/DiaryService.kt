@@ -5,13 +5,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.fillingsnap.server.domain.diary.dao.DiaryRepository
 import com.fillingsnap.server.domain.diary.domain.Diary
-import com.fillingsnap.server.domain.diary.dto.DiaryCreateRequestDto
+import com.fillingsnap.server.domain.diary.dto.request.DiaryCreateRequestDto
 import com.fillingsnap.server.domain.diary.dto.DiaryWithStudyDto
 import com.fillingsnap.server.domain.diary.dto.SimpleDiaryDto
 import com.fillingsnap.server.domain.story.dao.StoryRepository
 import com.fillingsnap.server.domain.user.domain.User
-import com.fillingsnap.server.global.config.websocket.WebSocketResponseDto
-import com.fillingsnap.server.global.config.websocket.WebSocketStatus
+import com.fillingsnap.server.global.websocket.dto.WebSocketResponseDto
+import com.fillingsnap.server.global.websocket.WebSocketStatus
 import com.fillingsnap.server.global.exception.CustomException
 import com.fillingsnap.server.global.exception.ErrorCode
 import com.fillingsnap.server.infra.openai.OpenAiService
@@ -26,7 +26,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
