@@ -1,4 +1,4 @@
-package com.fillingsnap.server.global.config.security
+package com.fillingsnap.server.global.auth.jwt
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletRequest
@@ -9,7 +9,7 @@ import org.springframework.web.filter.GenericFilterBean
 
 class JwtAuthenticationFilter(
 
-    private val jwtProvider: JwtProvider
+    private val jwtAuthenticationService: JwtAuthenticationService
 
 ): GenericFilterBean() {
 
@@ -18,8 +18,8 @@ class JwtAuthenticationFilter(
 
         if (token != null) {
             val split = token.split(" ")
-            if (split.size == 2 && split[0] == "Bearer" && jwtProvider.verifyToken(split[1])) {
-                val auth = jwtProvider.getAuthentication(split[1])
+            if (split.size == 2 && split[0] == "Bearer" && jwtAuthenticationService.verifyToken(split[1])) {
+                val auth = jwtAuthenticationService.getAuthentication(split[1])
                 SecurityContextHolder.getContext().authentication = auth
             }
         }

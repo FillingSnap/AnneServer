@@ -3,12 +3,8 @@ package com.fillingsnap.server.infra.openai
 import com.aallam.openai.api.chat.*
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
-import com.fillingsnap.server.global.config.websocket.WebSocketResponseDto
-import com.fillingsnap.server.global.config.websocket.WebSocketStatus
-import com.fillingsnap.server.infra.oracle.ObjectStorageService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.fillingsnap.server.global.websocket.dto.WebSocketResponseDto
+import com.fillingsnap.server.global.websocket.WebSocketStatus
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.stereotype.Service

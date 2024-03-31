@@ -1,11 +1,10 @@
-package com.fillingsnap.server.domain.user.service
+package com.fillingsnap.server.global.auth.oauth
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fillingsnap.server.domain.user.dao.UserRepository
 import com.fillingsnap.server.domain.user.domain.User
 import com.fillingsnap.server.domain.user.dto.LoginDto
-import com.fillingsnap.server.global.config.security.OAuthErrorHandler
-import com.fillingsnap.server.global.config.security.JwtProvider
+import com.fillingsnap.server.global.auth.jwt.JwtAuthenticationService
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -16,13 +15,13 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestTemplate
 
 @Service
-class LoginService (
+class OAuthService (
 
     private val env: Environment,
 
     private val userRepository: UserRepository,
 
-    private val tokenService: JwtProvider
+    private val tokenService: JwtAuthenticationService
 
 ) {
 

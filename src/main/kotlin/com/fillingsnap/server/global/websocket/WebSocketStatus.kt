@@ -1,4 +1,4 @@
-package com.fillingsnap.server.global.config.websocket
+package com.fillingsnap.server.global.websocket
 
 enum class WebSocketStatus (
 

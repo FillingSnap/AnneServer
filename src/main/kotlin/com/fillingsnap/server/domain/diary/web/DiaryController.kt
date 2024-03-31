@@ -1,11 +1,11 @@
 package com.fillingsnap.server.domain.diary.web
 
-import com.fillingsnap.server.domain.diary.dto.DiaryCreateRequestDto
+import com.fillingsnap.server.domain.diary.dto.request.DiaryCreateRequestDto
 import com.fillingsnap.server.domain.diary.dto.DiaryWithStudyDto
 import com.fillingsnap.server.domain.diary.dto.SimpleDiaryDto
 import com.fillingsnap.server.domain.diary.service.DiaryService
-import com.fillingsnap.server.global.config.websocket.WebSocketResponseDto
-import com.fillingsnap.server.global.config.websocket.WebSocketStatus
+import com.fillingsnap.server.global.websocket.dto.WebSocketResponseDto
+import com.fillingsnap.server.global.websocket.WebSocketStatus
 import io.swagger.v3.oas.annotations.Operation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

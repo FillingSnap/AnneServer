@@ -1,4 +1,4 @@
-package com.fillingsnap.server.global.exception
+package com.fillingsnap.server.global.exception.dto
 
 import org.springframework.http.HttpStatus
 import java.time.LocalDateTime

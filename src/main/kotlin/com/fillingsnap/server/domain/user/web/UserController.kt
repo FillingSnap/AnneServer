@@ -1,7 +1,7 @@
 package com.fillingsnap.server.domain.user.web
 
 import com.fillingsnap.server.domain.user.dto.RefreshTokenDto
-import com.fillingsnap.server.global.config.security.JwtProvider
+import com.fillingsnap.server.global.auth.jwt.JwtAuthenticationService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/user")
 class UserController (
 
-    private val jwtProvider: JwtProvider
+    private val jwtAuthenticationService: JwtAuthenticationService
 
 ) {
 
     @Operation(summary = "토큰 재발급")
     @GetMapping("/refresh")
     fun refresh(@RequestHeader("Refresh") refreshToken: String): ResponseEntity<RefreshTokenDto> {
-        return ResponseEntity.ok().body(jwtProvider.refreshToken(refreshToken))
+        return ResponseEntity.ok().body(jwtAuthenticationService.refreshToken(refreshToken))
     }
 
 }

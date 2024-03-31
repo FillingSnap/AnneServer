@@ -1,15 +1,16 @@
-package com.fillingsnap.server.global.config.websocket
+package com.fillingsnap.server.global.websocket
 
+import com.fillingsnap.server.global.websocket.dto.WebSocketResponseDto
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.Message
 import org.springframework.messaging.simp.stomp.StompCommand
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.messaging.support.MessageBuilder
+import org.springframework.stereotype.Component
 import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler
 
-@Configuration
+@Component
 class StompErrorHandler: StompSubProtocolErrorHandler() {
 
     override fun handleClientMessageProcessingError(

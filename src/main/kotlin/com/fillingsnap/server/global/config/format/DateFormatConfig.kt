@@ -1,4 +1,4 @@
-package com.fillingsnap.server.global.config
+package com.fillingsnap.server.global.config.format
 
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
