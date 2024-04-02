@@ -20,13 +20,13 @@ import java.util.*
 @Service
 class JwtAuthenticationService (
 
-    @Value("\${spring.jwt.secret}")
+    @Value("\${jwt.secret}")
     private var secretKey: String,
 
-    @Value("\${spring.jwt.token.access-expiration-time}")
+    @Value("\${jwt.token.access-expiration-time}")
     private val tokenPeriod: Long,
 
-    @Value("\${spring.jwt.token.refresh-expiration-time}")
+    @Value("\${jwt.token.refresh-expiration-time}")
     private val refreshPeriod: Long,
 
     private val userService: UserService,

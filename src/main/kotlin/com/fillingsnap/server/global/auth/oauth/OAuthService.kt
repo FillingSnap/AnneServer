@@ -64,6 +64,7 @@ class OAuthService (
         val entity = HttpEntity(params, headers)
 
         val restTemplate = RestTemplate()
+        restTemplate.errorHandler = OAuthErrorHandler()
         val response = restTemplate.exchange(tokenUri!!, HttpMethod.POST, entity, JsonNode::class.java)
         val accessTokenBody = response.body
 

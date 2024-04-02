@@ -15,8 +15,10 @@ enum class ErrorCode (
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다"),
     STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "스토리를 찾을 수 없습니다"),
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "일기를 찾을 수 없습니다"),
+    TEMPORAL_DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "임시 저장된 일기를 찾을 수 없습니다"),
 
-    TODAY_DIARY_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 오늘 자 일기가 존재합니다"),
+    IMAGE_SAVE_ERROR(HttpStatus.BAD_REQUEST, "이미지 업로드 도중 문제가 발생했습니다"),
+    IMAGE_TEXT_NOT_MATCHING(HttpStatus.BAD_REQUEST, "사진과 설명의 갯수가 일치하지 않습니다"),
     NOT_YOUR_STORY(HttpStatus.BAD_REQUEST, "해당 스토리의 소유자가 아닙니다"),
     NOT_YOUR_DIARY(HttpStatus.BAD_REQUEST, "해당 일기의 소유자가 아닙니다")
     ;

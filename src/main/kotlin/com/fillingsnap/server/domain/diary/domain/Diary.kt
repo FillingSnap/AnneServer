@@ -17,6 +17,8 @@ class Diary (
     @Column(columnDefinition = "LONGTEXT")
     val content: String,
 
+    val uuid: String,
+
     @ManyToOne(fetch = FetchType.LAZY)
     val user: User,
 

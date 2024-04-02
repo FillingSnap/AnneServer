@@ -12,6 +12,8 @@ data class DiaryWithStudyDto (
 
     val content: String,
 
+    val uuid: String,
+
     val userId: Long,
 
     val createdAt: LocalDateTime,
@@ -26,6 +28,7 @@ data class DiaryWithStudyDto (
         diary.id,
         diary.emotion,
         diary.content,
+        diary.uuid,
         diary.user.id!!,
         diary.createdAt,
         diary.updatedAt,
