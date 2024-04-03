@@ -10,7 +10,6 @@ interface DiaryRepository: JpaRepository<Diary, Long> {
 
     fun findAllByUser(user: User): List<Diary>
 
-    @Query("select d from Diary d where (d.user = :user) and (d.createdAt between :startDateTime and :endDateTime)")
-    fun findByUserAndCreatedAtBetween(user: User, startDateTime: LocalDateTime, endDateTime: LocalDateTime): Diary?
+    fun existsDiaryByUuid(uuid: String): Boolean
 
 }
