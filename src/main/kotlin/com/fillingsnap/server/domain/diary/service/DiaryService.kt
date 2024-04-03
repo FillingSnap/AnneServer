@@ -69,10 +69,15 @@ class DiaryService (
         return byteArrayOutputStream.toByteArray()
     }
 
-    fun generateDiary(imageList: List<MultipartFile>, request: DiaryGenerateRequestDto) {
+    fun generateDiary(imageList: List<MultipartFile>?, request: DiaryGenerateRequestDto) {
         val user = SecurityContextHolder.getContext().authentication.principal as User
         val textList = request.textList
-        val uuid = request.uuid
+        val uuid = request.uuid!!
+
+        if (diaryRepository.existsDiaryByUuid(uuid)) {
+            throw CustomException(ErrorCode.ALREADY_EXIST_UUID)
+        }
+
         val storyList = storyService.createStories(imageList, textList, uuid)
 
         val imageTextList = storyList.map {
@@ -125,7 +130,11 @@ class DiaryService (
 
     fun createDiary(request: DiaryCreateRequestDto): SimpleDiaryDto {
         val user = SecurityContextHolder.getContext().authentication.principal as User
-        val uuid = request.uuid
+        val uuid = request.uuid!!
+
+        if (diaryRepository.existsDiaryByUuid(uuid)) {
+            throw CustomException(ErrorCode.ALREADY_EXIST_UUID)
+        }
 
         redisDao.getValues(uuid) ?: throw CustomException(ErrorCode.TEMPORAL_DIARY_NOT_FOUND)
 
@@ -133,7 +142,7 @@ class DiaryService (
 
         val newDiary = diaryRepository.save(Diary(
             emotion = "null",
-            content = request.content,
+            content = request.content!!,
             user = user,
             uuid = uuid
         ))

@@ -44,8 +44,10 @@ class StoryService(
         return SimpleStudyDto(study)
     }
 
-    fun createStories(imageList: List<MultipartFile>, textList: List<String>, uuid: String): List<SimpleStudyDto> {
-        if (imageList.size != textList.size) {
+    fun createStories(imageList: List<MultipartFile>?, textList: List<String>?, uuid: String): List<SimpleStudyDto> {
+        if (imageList == null || textList == null) {
+            throw CustomException(ErrorCode.IMAGE_TEXT_REQUIRED)
+        } else if (imageList.size != textList.size) {
             throw CustomException(ErrorCode.IMAGE_TEXT_NOT_MATCHING)
         }
 
