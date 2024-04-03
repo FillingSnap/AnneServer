@@ -1,23 +1,25 @@
 package com.fillingsnap.server.domain.diary.web
 
-import com.fillingsnap.server.domain.diary.dto.DiaryCreateRequestDto
+import com.fillingsnap.server.domain.diary.dto.request.DiaryCreateRequestDto
 import com.fillingsnap.server.domain.diary.dto.DiaryWithStudyDto
 import com.fillingsnap.server.domain.diary.dto.SimpleDiaryDto
+import com.fillingsnap.server.domain.diary.dto.request.DiaryGenerateRequestDto
 import com.fillingsnap.server.domain.diary.service.DiaryService
-import com.fillingsnap.server.global.config.websocket.WebSocketResponseDto
-import com.fillingsnap.server.global.config.websocket.WebSocketStatus
+import com.fillingsnap.server.global.validation.ValidationSequence
+import com.fillingsnap.server.global.websocket.dto.WebSocketResponseDto
+import com.fillingsnap.server.global.websocket.WebSocketStatus
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.simp.SimpMessageSendingOperations
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import java.util.concurrent.TimeUnit
 
 @RestController
@@ -31,9 +33,12 @@ class DiaryController (
 ) {
 
     @Operation(summary = "일기 생성")
-    @PostMapping("/generate")
-    fun generateDiary(): ResponseEntity<Unit> {
-        return ResponseEntity.ok().body(diaryService.generateDiary())
+    @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun generateDiary(
+        @RequestPart(value = "imageList") imageList: List<MultipartFile>?,
+        @RequestPart(value = "requestList") @Validated(value = [ValidationSequence::class]) request: DiaryGenerateRequestDto
+    ): ResponseEntity<Unit> {
+        return ResponseEntity.ok().body(diaryService.generateDiary(imageList, request))
     }
 
     @Operation(summary = "임시 일기 조회")
@@ -44,7 +49,7 @@ class DiaryController (
 
     @Operation(summary = "일기 저장")
     @PostMapping("/create")
-    fun createDiary(@RequestBody request: DiaryCreateRequestDto): ResponseEntity<SimpleDiaryDto> {
+    fun createDiary(@RequestBody @Validated(value = [ValidationSequence::class]) request: DiaryCreateRequestDto): ResponseEntity<SimpleDiaryDto> {
         return ResponseEntity.ok().body(diaryService.createDiary(request))
     }
 

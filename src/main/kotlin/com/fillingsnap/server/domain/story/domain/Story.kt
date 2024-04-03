@@ -18,11 +18,13 @@ class Story (
 
     val image: String,
 
+    val uuid: String,
+
     @ManyToOne(fetch = FetchType.LAZY)
     val user: User,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    val diary: Diary? = null
+    var diary: Diary? = null
 
 ): BaseTimeEntity() {
 }

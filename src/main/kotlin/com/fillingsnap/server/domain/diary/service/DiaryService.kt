@@ -5,13 +5,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.fillingsnap.server.domain.diary.dao.DiaryRepository
 import com.fillingsnap.server.domain.diary.domain.Diary
-import com.fillingsnap.server.domain.diary.dto.DiaryCreateRequestDto
+import com.fillingsnap.server.domain.diary.dto.request.DiaryCreateRequestDto
 import com.fillingsnap.server.domain.diary.dto.DiaryWithStudyDto
 import com.fillingsnap.server.domain.diary.dto.SimpleDiaryDto
+import com.fillingsnap.server.domain.diary.dto.request.DiaryGenerateRequestDto
 import com.fillingsnap.server.domain.story.dao.StoryRepository
+import com.fillingsnap.server.domain.story.service.StoryService
 import com.fillingsnap.server.domain.user.domain.User
-import com.fillingsnap.server.global.config.websocket.WebSocketResponseDto
-import com.fillingsnap.server.global.config.websocket.WebSocketStatus
+import com.fillingsnap.server.global.websocket.dto.WebSocketResponseDto
+import com.fillingsnap.server.global.websocket.WebSocketStatus
 import com.fillingsnap.server.global.exception.CustomException
 import com.fillingsnap.server.global.exception.ErrorCode
 import com.fillingsnap.server.infra.openai.OpenAiService
@@ -24,13 +26,10 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
 import java.util.*
 import javax.imageio.ImageIO
 
@@ -40,6 +39,8 @@ class DiaryService (
     private val diaryRepository: DiaryRepository,
 
     private val storyRepository: StoryRepository,
+
+    private val storyService: StoryService,
 
     private val objectStorageService: ObjectStorageService,
 
@@ -68,28 +69,21 @@ class DiaryService (
         return byteArrayOutputStream.toByteArray()
     }
 
-    fun generateDiary() {
+    fun generateDiary(imageList: List<MultipartFile>?, request: DiaryGenerateRequestDto) {
         val user = SecurityContextHolder.getContext().authentication.principal as User
+        val textList = request.textList
+        val uuid = request.uuid!!
 
-        // todo: 자정 기준 일기 생성 로직 삭제
-        val startDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0))
-        val endDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59))
-        val diary = diaryRepository.findByUserAndCreatedAtBetween(user, startDateTime, endDateTime)
-
-        if (diary != null) {
-            throw CustomException(ErrorCode.TODAY_DIARY_ALREADY_EXIST)
+        if (diaryRepository.existsDiaryByUuid(uuid)) {
+            throw CustomException(ErrorCode.ALREADY_EXIST_UUID)
         }
 
-        val todayStoryList = storyRepository.findAllByCreatedAtBetween(startDateTime, endDateTime)
-        if (todayStoryList.isEmpty()) {
-            throw CustomException(ErrorCode.STORY_NOT_FOUND)
-        }
+        val storyList = storyService.createStories(imageList, textList, uuid)
 
-        val imageTextList = todayStoryList.map {
+        val imageTextList = storyList.map {
             Pair(Base64.getEncoder().encodeToString(imageResize(it.image)), it.text)
         }
 
-        val uuid = UUID.randomUUID().toString()
         sendingOperations.convertAndSend(
             "/queue/channel/${user.id!!}",
             WebSocketResponseDto(
@@ -129,23 +123,34 @@ class DiaryService (
     }
 
     fun getTemporalDiary(uuid: String): String {
-        val temporalDiary = redisDao.getValues(uuid) ?: throw CustomException(ErrorCode.DIARY_NOT_FOUND)
+        val temporalDiary = redisDao.getValues(uuid) ?: throw CustomException(ErrorCode.TEMPORAL_DIARY_NOT_FOUND)
 
         return temporalDiary
     }
 
     fun createDiary(request: DiaryCreateRequestDto): SimpleDiaryDto {
         val user = SecurityContextHolder.getContext().authentication.principal as User
+        val uuid = request.uuid!!
 
-        redisDao.getValues(request.uuid) ?: throw CustomException(ErrorCode.DIARY_NOT_FOUND)
+        if (diaryRepository.existsDiaryByUuid(uuid)) {
+            throw CustomException(ErrorCode.ALREADY_EXIST_UUID)
+        }
+
+        redisDao.getValues(uuid) ?: throw CustomException(ErrorCode.TEMPORAL_DIARY_NOT_FOUND)
+
+        val storyList = storyRepository.findAllByUuid(uuid)
 
         val newDiary = diaryRepository.save(Diary(
             emotion = "null",
-            content = request.content,
-            user = user
+            content = request.content!!,
+            user = user,
+            uuid = uuid
         ))
 
-        redisDao.deleteValues(request.uuid)
+        storyList.forEach { it.diary = newDiary }
+        storyRepository.saveAll(storyList)
+
+        redisDao.deleteValues(uuid)
 
         return SimpleDiaryDto(newDiary)
     }

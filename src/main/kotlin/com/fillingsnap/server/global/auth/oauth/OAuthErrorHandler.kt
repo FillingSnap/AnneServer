@@ -1,4 +1,4 @@
-package com.fillingsnap.server.global.config.security
+package com.fillingsnap.server.global.auth.oauth
 
 import com.fillingsnap.server.global.exception.CustomException
 import com.fillingsnap.server.global.exception.ErrorCode

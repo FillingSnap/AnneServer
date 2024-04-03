@@ -1,10 +1,10 @@
-package com.fillingsnap.server.global.config.security
+package com.fillingsnap.server.global.auth.jwt
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fillingsnap.server.global.exception.ErrorCode
-import com.fillingsnap.server.global.exception.ExceptionResponseDto
+import com.fillingsnap.server.global.exception.dto.ExceptionResponseDto
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.MediaType

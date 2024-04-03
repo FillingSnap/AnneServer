@@ -2,6 +2,7 @@ package com.fillingsnap.server.infra.oracle
 
 import com.fillingsnap.server.domain.user.domain.User
 import com.oracle.bmc.objectstorage.ObjectStorageClient
+import com.oracle.bmc.objectstorage.requests.DeleteObjectRequest
 import com.oracle.bmc.objectstorage.requests.GetNamespaceRequest
 import com.oracle.bmc.objectstorage.requests.GetObjectRequest
 import com.oracle.bmc.objectstorage.requests.PutObjectRequest
@@ -83,6 +84,18 @@ class ObjectStorageService (
         uploadManager.upload(uploadDetails)
 
         return url + URLEncoder.encode(fileName, "UTF-8")
+    }
+
+    fun deleteFile(fileName: String) {
+        val objectName = URLDecoder.decode(fileName.substring(url.length), "UTF-8")
+
+        val request = DeleteObjectRequest.builder()
+            .bucketName(bucketName)
+            .namespaceName(namespace)
+            .objectName(objectName)
+            .build()
+
+        client.deleteObject(request)
     }
 
 }

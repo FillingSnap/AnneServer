@@ -1,5 +1,6 @@
-package com.fillingsnap.server.global.config.websocket
+package com.fillingsnap.server.global.websocket.dto
 
+import com.fillingsnap.server.global.websocket.WebSocketStatus
 import kotlinx.serialization.Serializable
 
 @Serializable

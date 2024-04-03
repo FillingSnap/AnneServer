@@ -33,6 +33,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
     implementation("org.springframework.boot:spring-boot-starter-security:3.2.2")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-websocket:3.2.2")
     implementation("org.apache.httpcomponents.client5:httpclient5:5.3")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")

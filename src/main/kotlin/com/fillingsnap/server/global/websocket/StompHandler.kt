@@ -1,6 +1,6 @@
-package com.fillingsnap.server.global.config.websocket
+package com.fillingsnap.server.global.websocket
 
-import com.fillingsnap.server.global.config.security.JwtProvider
+import com.fillingsnap.server.global.auth.jwt.JwtAuthenticationService
 import org.springframework.messaging.Message
 import org.springframework.messaging.MessageChannel
 import org.springframework.messaging.MessageDeliveryException
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 @Component
 class StompHandler (
 
-    private val tokenService: JwtProvider
+    private val jwtAuthenticationService: JwtAuthenticationService
 
 ): ChannelInterceptor {
 
@@ -24,13 +24,13 @@ class StompHandler (
 
             // JWT 토큰 검증
             val split = token.toString().split(" ")
-            if (!(split.size == 2 && tokenService.verifyToken(split[1]))) {
+            if (!(split.size == 2 && jwtAuthenticationService.verifyToken(split[1]))) {
                 throw MessageDeliveryException("UNAUTHORIZED")
             }
 
             // 세션에 저장
             val sessionAttributes = headerAccessor.sessionAttributes
-            sessionAttributes!!["id"] = tokenService.getId(split[1])
+            sessionAttributes!!["id"] = jwtAuthenticationService.getId(split[1])
             headerAccessor.sessionAttributes = sessionAttributes
         } else if (type == "SUBSCRIBE") {
             val destination = headerAccessor.destination

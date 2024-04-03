@@ -1,6 +1,6 @@
 package com.fillingsnap.server.domain.user.web
 
-import com.fillingsnap.server.domain.user.service.LoginService
+import com.fillingsnap.server.global.auth.oauth.OAuthService
 import com.fillingsnap.server.domain.user.dto.LoginDto
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/login/oauth2")
-class LoginController (
+class UserOAuthController (
 
-    private val loginService: LoginService
+    private val oAuthService: OAuthService
 
 ) {
 
@@ -32,7 +32,7 @@ class LoginController (
         @RequestParam code: String,
         @PathVariable("registrationId") registrationId: String
     ): ResponseEntity<LoginDto> {
-        return ResponseEntity.ok(loginService.login(code, registrationId))
+        return ResponseEntity.ok(oAuthService.login(code, registrationId))
     }
 
 }
