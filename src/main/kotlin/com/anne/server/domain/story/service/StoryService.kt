@@ -6,7 +6,7 @@ import com.anne.server.domain.story.dto.SimpleStudyDto
 import com.anne.server.domain.user.domain.User
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
-import com.anne.server.infra.oracle.ObjectStorageService
+import com.anne.server.infra.amazon.AwsS3Service
 import com.anne.server.infra.redis.RedisDao
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Scheduled
@@ -20,7 +20,7 @@ class StoryService(
 
     private val storyRepository: StoryRepository,
 
-    private val objectStorageService: ObjectStorageService,
+    private val awsS3Service: AwsS3Service,
 
     private val redisDao: RedisDao
 
@@ -54,10 +54,10 @@ class StoryService(
 
         for (i in imageList.indices) {
             val image: String = try {
-                objectStorageService.uploadFile(imageList[i])
+                awsS3Service.uploadObject(imageList[i])
             } catch (e: Exception) {
                 for (image in savedImageList) {
-                    objectStorageService.deleteFile(image)
+                    awsS3Service.deleteObject(image)
                 }
                 throw CustomException(ErrorCode.IMAGE_SAVE_ERROR)
             }
@@ -81,7 +81,7 @@ class StoryService(
         for (story in nullDiaryStoryList) {
             if (redisDao.getValues(story.uuid) == null) {
                 try {
-                    objectStorageService.deleteFile(story.image)
+                    awsS3Service.deleteObject(story.image)
                     deleteStoryList.add(story)
                 } catch (_: Exception) {
                     ;

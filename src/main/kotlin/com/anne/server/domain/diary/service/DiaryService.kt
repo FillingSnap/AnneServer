@@ -16,8 +16,8 @@ import com.anne.server.global.websocket.dto.WebSocketResponseDto
 import com.anne.server.global.websocket.WebSocketStatus
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
+import com.anne.server.infra.amazon.AwsS3Service
 import com.anne.server.infra.openai.OpenAiService
-import com.anne.server.infra.oracle.ObjectStorageService
 import com.anne.server.infra.redis.RedisDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +44,7 @@ class DiaryService (
 
     private val storyService: StoryService,
 
-    private val objectStorageService: ObjectStorageService,
+    private val awsS3Service: AwsS3Service,
 
     private val openAiService: OpenAiService,
 
@@ -55,7 +55,7 @@ class DiaryService (
 ) {
 
     fun imageResize(image: String): ByteArray {
-        val inputStream = objectStorageService.getObject(image)
+        val inputStream = awsS3Service.getObject(image)
 
         val sourceImage = ImageIO.read(inputStream)
         val width = 640
