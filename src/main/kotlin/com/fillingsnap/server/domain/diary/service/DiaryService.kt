@@ -22,6 +22,8 @@ import com.fillingsnap.server.infra.redis.RedisDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.security.core.context.SecurityContextHolder
@@ -161,6 +163,20 @@ class DiaryService (
         return diaryRepository.findAllByUser(user).map {
             SimpleDiaryDto(it)
         }
+    }
+
+    fun getDiaryListPageable(pageable: Pageable): Page<SimpleDiaryDto> {
+        val user = SecurityContextHolder.getContext().authentication.principal as User
+
+        val page = diaryRepository.findAllByUser(user, pageable).map {
+            SimpleDiaryDto(it)
+        }
+
+        if (page.totalPages <= page.number) {
+            throw CustomException(ErrorCode.WRONG_PAGE)
+        }
+
+        return page
     }
 
     fun getDiaryById(id: Long): DiaryWithStudyDto {
