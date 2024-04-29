@@ -3,7 +3,8 @@ package com.anne.server.global.auth.oauth
 import com.fasterxml.jackson.databind.JsonNode
 import com.anne.server.domain.user.dao.UserRepository
 import com.anne.server.domain.user.domain.User
-import com.anne.server.domain.user.dto.LoginDto
+import com.anne.server.domain.user.dto.response.UserLoginResponseDto
+import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.global.auth.jwt.JwtAuthenticationService
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpEntity
@@ -25,7 +26,7 @@ class OAuthService (
 
 ) {
 
-    fun login(code: String, registrationId: String): LoginDto {
+    fun login(code: String, registrationId: String): UserLoginResponseDto {
         val accessToken = getAccessToken(code, registrationId)
         val userResourceNode = getUserResource(accessToken, registrationId)!!
         val uid = userResourceNode.get("id").asText()
@@ -42,7 +43,11 @@ class OAuthService (
            )
         }
 
-        return tokenService.generateTokenAndRefreshToken(user.id!!.toString(), user.provider, user.uid)
+        return UserLoginResponseDto(
+            UserDto(user),
+            tokenService.generateAccessToken(user.id!!.toString(), user.provider, user.uid),
+            tokenService.generateRefreshToken(user.id!!.toString())
+        )
     }
 
     fun getAccessToken(code: String, registrationId: String): String {

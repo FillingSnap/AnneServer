@@ -1,7 +1,7 @@
 package com.anne.server.domain.user.web
 
 import com.anne.server.global.auth.oauth.OAuthService
-import com.anne.server.domain.user.dto.LoginDto
+import com.anne.server.domain.user.dto.response.UserLoginResponseDto
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -31,7 +31,7 @@ class UserOAuthController (
     fun getToken(
         @RequestParam code: String,
         @PathVariable("registrationId") registrationId: String
-    ): ResponseEntity<LoginDto> {
+    ): ResponseEntity<UserLoginResponseDto> {
         return ResponseEntity.ok(oAuthService.login(code, registrationId))
     }
 

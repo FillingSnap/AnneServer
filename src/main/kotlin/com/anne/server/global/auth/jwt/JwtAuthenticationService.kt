@@ -1,8 +1,6 @@
 package com.anne.server.global.auth.jwt
 
-import com.anne.server.domain.user.dto.RefreshTokenDto
-import com.anne.server.domain.user.dto.LoginDto
-import com.anne.server.domain.user.dto.UserDto
+import com.anne.server.domain.user.dto.response.TokenResponseDto
 import com.anne.server.domain.user.service.UserService
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
@@ -40,25 +38,26 @@ class JwtAuthenticationService (
         secretKey = Base64.getEncoder().encodeToString(secretKey.toByteArray())
     }
 
-    fun generateTokenAndRefreshToken(id: String, provider: String, uid: String): LoginDto {
-        val user = userService.loadUserById(id.toLong())
-
+    fun generateAccessToken(id: String, provider: String, uid: String): String {
         val tokenClaims = Jwts.claims()
             .subject(id)
             .add(mapOf(Pair("provider", provider), Pair("uid", uid)))
             .build()
+
+        return generateToken(tokenPeriod, tokenClaims)
+    }
+
+    fun generateRefreshToken(id: String): String {
         val refreshClaims = Jwts.claims()
             .subject(id)
             .build()
 
-        val token = generateToken(tokenPeriod, tokenClaims)
         val refresh = generateToken(refreshPeriod, refreshClaims)
         redisDao.setValues(id, refresh, Duration.ofMillis(refreshPeriod))
-
-        return LoginDto(UserDto(user), token, refresh)
+        return refresh
     }
 
-    fun refreshToken(refreshToken: String): RefreshTokenDto {
+    fun refreshToken(refreshToken: String): TokenResponseDto {
         val split = refreshToken.split(" ")
         if (split.size != 2 || split[0] != "Bearer") {
             throw CustomException(ErrorCode.INVALID_TOKEN)
@@ -75,7 +74,7 @@ class JwtAuthenticationService (
             .add(mapOf(Pair("provider", user.provider), Pair("uid", user.uid)))
             .build()
 
-        return RefreshTokenDto(generateToken(tokenPeriod, claims))
+        return TokenResponseDto(generateToken(tokenPeriod, claims))
     }
 
     fun generateToken(period: Long, claims: Claims): String {
