@@ -25,7 +25,6 @@ jobs:
       - name: Make yml
         run: |
           mkdir -p ./src/main/resources
-          mkdir -p ./src/test/resources
           echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
           echo "${{ secrets.APPLICATION_DEV }}" | base64 --decode > ./src/main/resources/application-dev.yml
           echo "${{ secrets.APPLICATION_PROD }}" | base64 --decode > ./src/main/resources/application-prod.yml
