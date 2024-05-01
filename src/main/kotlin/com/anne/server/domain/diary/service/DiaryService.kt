@@ -119,7 +119,7 @@ class DiaryService (
                 )
             )
 
-            redisDao.setValues(uuid, result, Duration.ofMillis(600000L))
+            redisDao.setValues(uuid, result, Duration.ofMillis(604800000L))
         }
     }
 
