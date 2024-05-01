@@ -1,9 +1,9 @@
-package com.anne.server.domain.user.dto
+package com.anne.server.domain.user.dto.response
 
 import com.anne.server.domain.user.domain.User
 import java.time.LocalDateTime
 
-data class UserDto (
+data class UserSimpleResponseDto (
 
     val id: Long,
 

@@ -6,8 +6,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.anne.server.domain.diary.dao.DiaryRepository
 import com.anne.server.domain.diary.domain.Diary
 import com.anne.server.domain.diary.dto.request.DiaryCreateRequestDto
-import com.anne.server.domain.diary.dto.DiaryWithStudyDto
-import com.anne.server.domain.diary.dto.SimpleDiaryDto
+import com.anne.server.domain.diary.dto.response.DiaryWithStoryResponseDto
 import com.anne.server.domain.diary.dto.request.DiaryGenerateRequestDto
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.story.service.StoryService
@@ -130,7 +129,7 @@ class DiaryService (
         return temporalDiary
     }
 
-    fun createDiary(request: DiaryCreateRequestDto): SimpleDiaryDto {
+    fun createDiary(request: DiaryCreateRequestDto): DiaryWithStoryResponseDto {
         val user = SecurityContextHolder.getContext().authentication.principal as User
         val uuid = request.uuid!!
 
@@ -154,22 +153,22 @@ class DiaryService (
 
         redisDao.deleteValues(uuid)
 
-        return SimpleDiaryDto(newDiary)
+        return DiaryWithStoryResponseDto(newDiary)
     }
 
-    fun getDiaryList(): List<SimpleDiaryDto> {
+    fun getDiaryList(): List<DiaryWithStoryResponseDto> {
         val user = SecurityContextHolder.getContext().authentication.principal as User
 
         return diaryRepository.findAllByUser(user).map {
-            SimpleDiaryDto(it)
+            DiaryWithStoryResponseDto(it)
         }
     }
 
-    fun getDiaryListPageable(pageable: Pageable): Page<SimpleDiaryDto> {
+    fun getDiaryListPageable(pageable: Pageable): Page<DiaryWithStoryResponseDto> {
         val user = SecurityContextHolder.getContext().authentication.principal as User
 
         val page = diaryRepository.findAllByUser(user, pageable).map {
-            SimpleDiaryDto(it)
+            DiaryWithStoryResponseDto(it)
         }
 
         if (page.totalPages <= page.number) {
@@ -179,7 +178,7 @@ class DiaryService (
         return page
     }
 
-    fun getDiaryById(id: Long): DiaryWithStudyDto {
+    fun getDiaryById(id: Long): DiaryWithStoryResponseDto {
         val diary = diaryRepository.findByIdOrNull(id)
             ?: throw CustomException(ErrorCode.DIARY_NOT_FOUND)
 
@@ -190,7 +189,7 @@ class DiaryService (
             throw CustomException(ErrorCode.NOT_YOUR_DIARY)
         }
 
-        return DiaryWithStudyDto(diary)
+        return DiaryWithStoryResponseDto(diary)
     }
 
 }

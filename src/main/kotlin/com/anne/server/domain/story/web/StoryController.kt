@@ -1,6 +1,6 @@
 package com.anne.server.domain.story.web
 
-import com.anne.server.domain.story.dto.SimpleStudyDto
+import com.anne.server.domain.story.dto.response.StudySimpleResponseDto
 import com.anne.server.domain.story.service.StoryService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
@@ -16,7 +16,7 @@ class StoryController (
 
     @Operation(summary = "스토리 단일 조회")
     @GetMapping("/{id}")
-    fun getStoryById(@PathVariable id: Long): ResponseEntity<SimpleStudyDto> {
+    fun getStoryById(@PathVariable id: Long): ResponseEntity<StudySimpleResponseDto> {
         return ResponseEntity.ok().body(storyService.getStoryById(id))
     }
 

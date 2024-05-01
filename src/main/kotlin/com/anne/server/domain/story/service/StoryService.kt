@@ -2,7 +2,7 @@ package com.anne.server.domain.story.service
 
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.story.domain.Story
-import com.anne.server.domain.story.dto.SimpleStudyDto
+import com.anne.server.domain.story.dto.response.StudySimpleResponseDto
 import com.anne.server.domain.user.domain.User
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
@@ -26,7 +26,7 @@ class StoryService(
 
 ) {
 
-    fun getStoryById(id: Long): SimpleStudyDto {
+    fun getStoryById(id: Long): StudySimpleResponseDto {
         val study = storyRepository.findByIdOrNull(id)
             ?: throw CustomException(ErrorCode.STORY_NOT_FOUND)
 
@@ -37,10 +37,10 @@ class StoryService(
             throw CustomException(ErrorCode.NOT_YOUR_STORY)
         }
 
-        return SimpleStudyDto(study)
+        return StudySimpleResponseDto(study)
     }
 
-    fun createStories(imageList: List<MultipartFile>?, textList: List<String>?, uuid: String): List<SimpleStudyDto> {
+    fun createStories(imageList: List<MultipartFile>?, textList: List<String>?, uuid: String): List<StudySimpleResponseDto> {
         if (imageList == null || textList == null) {
             throw CustomException(ErrorCode.IMAGE_TEXT_REQUIRED)
         } else if (imageList.size != textList.size) {
@@ -71,7 +71,7 @@ class StoryService(
             storyList.add(story)
         }
 
-        return storyRepository.saveAll(storyList).map { SimpleStudyDto(it) }
+        return storyRepository.saveAll(storyList).map { StudySimpleResponseDto(it) }
     }
 
     @Scheduled(cron = "0 0 * * * *")

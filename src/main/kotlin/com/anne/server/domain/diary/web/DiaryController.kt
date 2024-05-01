@@ -1,8 +1,7 @@
 package com.anne.server.domain.diary.web
 
 import com.anne.server.domain.diary.dto.request.DiaryCreateRequestDto
-import com.anne.server.domain.diary.dto.DiaryWithStudyDto
-import com.anne.server.domain.diary.dto.SimpleDiaryDto
+import com.anne.server.domain.diary.dto.response.DiaryWithStoryResponseDto
 import com.anne.server.domain.diary.dto.request.DiaryGenerateRequestDto
 import com.anne.server.domain.diary.service.DiaryService
 import com.anne.server.global.validation.ValidationSequence
@@ -51,7 +50,7 @@ class DiaryController (
 
     @Operation(summary = "일기 저장")
     @PostMapping("/create")
-    fun createDiary(@RequestBody @Validated(value = [ValidationSequence::class]) request: DiaryCreateRequestDto): ResponseEntity<SimpleDiaryDto> {
+    fun createDiary(@RequestBody @Validated(value = [ValidationSequence::class]) request: DiaryCreateRequestDto): ResponseEntity<DiaryWithStoryResponseDto> {
         return ResponseEntity.ok().body(diaryService.createDiary(request))
     }
 
@@ -95,7 +94,7 @@ class DiaryController (
 
     @Operation(summary = "일기 전체 조회")
     @GetMapping
-    fun getDiaryList(): ResponseEntity<List<SimpleDiaryDto>> {
+    fun getDiaryList(): ResponseEntity<List<DiaryWithStoryResponseDto>> {
         return ResponseEntity.ok().body(diaryService.getDiaryList())
     }
 
@@ -103,13 +102,13 @@ class DiaryController (
     @GetMapping("/pageable")
     fun getDiaryListPageable(
         @PageableDefault(size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
-    ): ResponseEntity<Page<SimpleDiaryDto>> {
+    ): ResponseEntity<Page<DiaryWithStoryResponseDto>> {
         return ResponseEntity.ok().body(diaryService.getDiaryListPageable(pageable))
     }
 
     @Operation(summary = "일기 단일 조회")
     @GetMapping("/{id}")
-    fun getDiaryList(@PathVariable("id") id: Long): ResponseEntity<DiaryWithStudyDto> {
+    fun getDiaryList(@PathVariable("id") id: Long): ResponseEntity<DiaryWithStoryResponseDto> {
         return  ResponseEntity.ok().body(diaryService.getDiaryById(id))
     }
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.anne.server.domain.user.dao.UserRepository
 import com.anne.server.domain.user.domain.User
 import com.anne.server.domain.user.dto.response.UserLoginResponseDto
-import com.anne.server.domain.user.dto.UserDto
+import com.anne.server.domain.user.dto.response.UserSimpleResponseDto
 import com.anne.server.global.auth.jwt.JwtAuthenticationService
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpEntity
@@ -44,7 +44,7 @@ class OAuthService (
         }
 
         return UserLoginResponseDto(
-            UserDto(user),
+            UserSimpleResponseDto(user),
             tokenService.generateAccessToken(user.id!!.toString(), user.provider, user.uid),
             tokenService.generateRefreshToken(user.id!!.toString())
         )
