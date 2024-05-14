@@ -9,7 +9,7 @@ plugins {
     kotlin("plugin.jpa") version "1.9.22"
 }
 
-group = "com.fillingsnap"
+group = "com.anne"
 version = "0.0.1-SNAPSHOT"
 
 java {
@@ -43,6 +43,8 @@ dependencies {
 
     implementation("org.slf4j:slf4j-api:2.0.12")
     testImplementation("org.slf4j:slf4j-simple:2.0.12")
+
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 
     implementation("com.oracle.oci.sdk:oci-java-sdk-addons-resteasy-client-configurator")
     implementation("com.oracle.oci.sdk:oci-java-sdk-objectstorage")
