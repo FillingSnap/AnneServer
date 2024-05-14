@@ -23,11 +23,8 @@ jobs:
 
       - name: Make yml
         run: |
-          mkdir -p ./src/main/resources/oci
-          mkdir -p ./src/test/resources
-          echo "${{ secrets.SERVER_APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
-          echo "${{ secrets.OCI_CONFIG }}" | base64 --decode > ./src/main/resources/oci/config
-          echo "${{ secrets.OCI_PRIVATE_PEM }}" | base64 --decode > ./src/main/resources/oci/private.pem
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
         shell: bash
 
       - name: Web Docker Build and Push
@@ -43,7 +40,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.KEY }}
           script: |
-            sudo docker-compose stop ${{ secrets.SERVER_CONTAINER_NAME }}
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:latest
-            
-            sudo docker-compose up -d
+            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            sudo chmod 777 /home/ubuntu/docker/deploy.sh
+            sudo /home/ubuntu/docker/deploy.sh $DOCKER_USERNAME
