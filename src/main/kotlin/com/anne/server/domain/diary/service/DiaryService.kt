@@ -156,15 +156,7 @@ class DiaryService (
         return DiaryWithStoryResponseDto(newDiary)
     }
 
-    fun getDiaryList(): List<DiaryWithStoryResponseDto> {
-        val user = SecurityContextHolder.getContext().authentication.principal as User
-
-        return diaryRepository.findAllByUser(user).map {
-            DiaryWithStoryResponseDto(it)
-        }
-    }
-
-    fun getDiaryListPageable(pageable: Pageable): Page<DiaryWithStoryResponseDto> {
+    fun getDiaryList(pageable: Pageable): Page<DiaryWithStoryResponseDto> {
         val user = SecurityContextHolder.getContext().authentication.principal as User
 
         val page = diaryRepository.findAllByUser(user, pageable).map {
