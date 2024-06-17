@@ -94,16 +94,10 @@ class DiaryController (
 
     @Operation(summary = "일기 전체 조회")
     @GetMapping
-    fun getDiaryList(): ResponseEntity<List<DiaryWithStoryResponseDto>> {
-        return ResponseEntity.ok().body(diaryService.getDiaryList())
-    }
-
-    @Operation(summary = "일기 전체 조회(Pageable)")
-    @GetMapping("/pageable")
-    fun getDiaryListPageable(
-        @PageableDefault(size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
+    fun getDiaryList(
+        @PageableDefault(size = 15, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<DiaryWithStoryResponseDto>> {
-        return ResponseEntity.ok().body(diaryService.getDiaryListPageable(pageable))
+        return ResponseEntity.ok().body(diaryService.getDiaryList(pageable))
     }
 
     @Operation(summary = "일기 단일 조회")
