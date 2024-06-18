@@ -1,8 +1,5 @@
 package com.anne.server.domain.diary.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.anne.server.domain.diary.dao.DiaryRepository
 import com.anne.server.domain.diary.domain.Diary
 import com.anne.server.domain.diary.dto.request.DiaryCreateRequestDto
@@ -18,9 +15,6 @@ import com.anne.server.global.exception.ErrorCode
 import com.anne.server.infra.amazon.AwsS3Service
 import com.anne.server.infra.openai.OpenAiService
 import com.anne.server.infra.redis.RedisDao
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -30,7 +24,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
-import java.time.Duration
 import java.util.*
 import javax.imageio.ImageIO
 
@@ -93,10 +86,9 @@ class DiaryService (
             )
         )
 
-        val coroutineScope = CoroutineScope(Dispatchers.IO)
-        coroutineScope.launch {
-            val result = try {
-                openAiService.openAi(user.id!!, imageTextList)
+        Thread {
+            try {
+                openAiService.openAi(uuid, user.id!!, imageTextList)
             } catch (e: Exception) {
                 sendingOperations.convertAndSend(
                     "/queue/channel/${user.id!!}",
@@ -105,22 +97,8 @@ class DiaryService (
                         content = e.message
                     )
                 )
-                return@launch
             }
-
-            val mapper = ObjectMapper().registerKotlinModule()
-            mapper.registerModules(JavaTimeModule())
-
-            sendingOperations.convertAndSend(
-                "/queue/channel/${user.id!!}",
-                WebSocketResponseDto(
-                    status = WebSocketStatus.EOF,
-                    content = result
-                )
-            )
-
-            redisDao.setValues(uuid, result, Duration.ofMillis(604800000L))
-        }
+        }.start()
     }
 
     fun getTemporalDiary(uuid: String): String {
