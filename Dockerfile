@@ -13,8 +13,8 @@ WORKDIR /app
 RUN adduser --system --group app-api
 
 COPY --from=build --chown=app-api:app-api /build/build/libs/*.jar ./app.jar
-COPY --from=build --chown=app-api:app-api /buile/src/main/resources/json/diary.json ./diary.json
-COPY --from=build --chown=app-api:app-api /buile/src/main/resources/json/mbti.json ./mbti.json
+COPY --from=build --chown=app-api:app-api /buile/build/src/main/resources/json/diary.json ./diary.json
+COPY --from=build --chown=app-api:app-api /buile/build/src/main/resources/json/mbti.json ./mbti.json
 
 USER app-api
 
