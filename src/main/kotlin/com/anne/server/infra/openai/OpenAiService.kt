@@ -81,14 +81,14 @@ class OpenAiService (
 
     fun openAi(uuid: String, id: Long, imageTextList: List<Pair<String, String>>): String {
         val parser = JSONParser()
-        val mbtiReader = FileReader("src/main/resources/json/mbti.json")
+        val mbtiReader = FileReader("./src/main/resources/json/mbti.json")
         val mbtiObject = parser.parse(mbtiReader) as JSONObject
 
         val mbti = "INFP"
         val systemContent = "당신의 MBTI는 ${mbti}이다. ${mbtiObject[mbti]}. 또한 당신은 세상에서 글을 잘 쓰는 작가이다. " +
                 "주어진 분위기와 키워드를 참고하여 일기를 작성하라."
 
-        val diaryReader = FileReader("src/main/resources/json/diary.json")
+        val diaryReader = FileReader("./src/main/resources/json/diary.json")
         val diaryArray = parser.parse(diaryReader) as JSONArray
         val diary = 0
         val diaryObject = diaryArray[diary] as JSONObject
@@ -198,14 +198,14 @@ class OpenAiService (
 
     fun test(uuid: String, id: Long): Flux<SseResponseDto> {
         val parser = JSONParser()
-        val mbtiReader = FileReader("src/main/resources/json/mbti.json")
+        val mbtiReader = FileReader("./src/main/resources/json/mbti.json")
         val mbtiObject = parser.parse(mbtiReader) as JSONObject
 
         val mbti = "INFP"
         val systemContent = "당신의 MBTI는 ${mbti}이다. ${mbtiObject[mbti]}. 또한 당신은 세상에서 글을 잘 쓰는 작가이다. " +
                 "주어진 분위기와 키워드를 참고하여 일기를 작성하라."
 
-        val diaryReader = FileReader("src/main/resources/json/diary.json")
+        val diaryReader = FileReader("./src/main/resources/json/diary.json")
         val diaryArray = parser.parse(diaryReader) as JSONArray
         val diary = 0
         val diaryObject = diaryArray[diary] as JSONObject
