@@ -5,8 +5,8 @@ COPY src/main /build/src/main
 
 COPY build.gradle.kts settings.gradle.kts /build/
 
-RUN echo /build/src/main/diary.json
-RUN echo /build/src/main/mbti.json
+RUN cat /build/src/main/diary.json
+RUN cat /build/src/main/mbti.json
 
 RUN gradle build -x test --parallel --continue > /dev/null 2>&1 || true
 
