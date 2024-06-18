@@ -1,13 +1,27 @@
 package com.anne.server.infra.openai
 
-import com.aallam.openai.api.chat.*
-import com.aallam.openai.api.model.ModelId
-import com.aallam.openai.client.OpenAI
+import com.anne.server.infra.openai.dto.ChatResponseDto
 import com.anne.server.global.websocket.dto.WebSocketResponseDto
 import com.anne.server.global.websocket.WebSocketStatus
+import com.anne.server.infra.openai.dto.SseResponseDto
+import com.anne.server.infra.redis.RedisDao
+import io.netty.channel.EventLoopGroup
+import org.json.simple.JSONArray
+import org.json.simple.JSONObject
+import org.json.simple.parser.JSONParser
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Flux
+import reactor.core.scheduler.Schedulers
+import java.io.FileReader
+import java.time.Duration
 
 @Service
 class OpenAiService (
@@ -15,99 +29,277 @@ class OpenAiService (
     @Value("\${openai.token}")
     private val token: String,
 
-    private val sendingOperations: SimpMessageSendingOperations
+    private val sendingOperations: SimpMessageSendingOperations,
+
+    private val restTemplate: RestTemplate,
+
+    private val redisDao: RedisDao
 
 ) {
 
-    private val client = OpenAI(token)
+    fun request(requestImage: String): String {
+        val headers = HttpHeaders()
+        headers.set("Authorization", "Bearer $token")
 
-    suspend fun request(image: String): String? {
-        val moodRequest = ChatCompletionRequest(
-            model = ModelId("gpt-4-vision-preview"),
-            messages = listOf(
-                ChatMessage(
-                    role = ChatRole.User,
-                    content = listOf(
-                        TextPart(
-                            "사진의 키워드와 해당 사진이 어떤 분위기인지를 다음과 같은 형식으로 말하시오. " +
-                            "[키워드: [A, B, C], 분위기: [X, Y]]"
-                        ),
-                        ImagePart(
-                            ImagePart.ImageURL(
-                                url = "data:image/jpeg;base64,${image}"
-                            )
-                        )
-                    )
-                ),
-            ),
-            maxTokens = 100
+        val jsonStr = "{\n" +
+                "    \"model\": \"gpt-4-vision-preview\", \n" +
+                "    \"messages\": [\n" +
+                "        {\n" +
+                "            \"role\": \"user\",\n" +
+                "            \"content\": [\n" +
+                "                {\n" +
+                "                    \"text\": \"사진 안에 어떤 물체가 있고 어떤 분위기인지를 다음과 같은 형식으로 말해줘. " +
+                "[분위기: [A, B, C], 키워드: [X, Y]]\",\n" +
+                "                    \"type\": \"text\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\": \"image_url\", \n" +
+                "                    \"image_url\": {\n" +
+                "                        \"url\": \"data:image/jpeg;base64,$requestImage\"\n" +
+                "                    }\n" +
+                "                }\n" +
+                "            ]\n" +
+                "        }\n" +
+                "    ], \n" +
+                "    \"max_tokens\": 100\n" +
+                "}"
+
+        val jsonParser = JSONParser()
+        val obj = jsonParser.parse(jsonStr) as JSONObject
+
+        val entity = HttpEntity(obj, headers)
+
+        val response = restTemplate.exchange(
+            "https://api.openai.com/v1/chat/completions",
+            HttpMethod.POST,
+            entity,
+            ChatResponseDto::class.java
         )
-        val moodCompletion: ChatCompletion = client.chatCompletion(moodRequest)
 
-        return moodCompletion.choices[0].message.content
+        return response.body!!.choices[0].message.content
     }
 
-    suspend fun openAi(id: Long, imageTextList: List<Pair<String, String>>): String {
-        var question =
-            "주어진 키워드와 텍스트, 분위기를 참고하여 일기 형식의 글을 작성하라. 일기의 끝에 반드시 '&' 라는 토큰을 출력하라.\n" +
-            "키워드: [커피숍, 책]\n" +
-            "분위기: [평온함, 행복, 감사함]\n" +
-            "텍스트: 카페에서 커피 한잔 ㅎㅎ\n\n" +
-            "키워드: [하늘, 구름, 건물]\n" +
-            "분위기: [평화로운, 밝은]\n" +
-            "텍스트: \n\n" +
-            "키워드: [스시, 일식, 해산물]\n" +
-            "분위기: [맛있어 보임, 전통적]\n" +
-            "텍스트: 친구들이랑 저녁 @문태진\n\n" +
-            "일기: 카페에서 커피 한 잔을 즐기며 책을 읽는 시간은 언제나 평온함과 행복을 선사해준다. " +
-            "커피숍의 아늑한 분위기와 함께 책 속으로 빠져들면, 일상의 소란과 스트레스가 멀어지고 마음이 가라앉는다. " +
-            "이런 소중한 시간들을 갖게 해주는 것에 감사함을 느낀다. " +
-            "하늘을 바라보며 건물과 구름이 어우러진 풍경은 평화로움과 밝음을 안겨준다. " +
-            "구름 사이로 비치는 햇살은 마치 우리 안에 있는 작은 희망이 피어나는 것처럼 느껴진다. " +
-            "이런 순간들을 만끽하며 세상의 아름다움에 다시 한번 감사함을 느낀다. " +
-            "친구들과 함께한 저녁 @문태진은 맛있어 보이는 스시와 해산물로 가득찬 전통적인 일식 요리를 맛볼 수 있었다. " +
-            "함께한 시간은 즐겁고 소중한 추억으로 남을 것이다. " +
-            "친구들과 함께한 이 특별한 저녁에 감사함을 느끼며, 내일을 기대한다. &\n\n"
+    fun openAi(uuid: String, id: Long, imageTextList: List<Pair<String, String>>): String {
+        val parser = JSONParser()
+        val mbtiReader = FileReader("src/main/resources/json/mbti.json")
+        val mbtiObject = parser.parse(mbtiReader) as JSONObject
 
+        val mbti = "INFP"
+        val systemContent = "당신의 MBTI는 ${mbti}이다. ${mbtiObject[mbti]}. 또한 당신은 세상에서 글을 잘 쓰는 작가이다. " +
+                "주어진 분위기와 키워드를 참고하여 일기를 작성하라."
+
+        val diaryReader = FileReader("src/main/resources/json/diary.json")
+        val diaryArray = parser.parse(diaryReader) as JSONArray
+        val diary = 0
+        val diaryObject = diaryArray[diary] as JSONObject
+
+        var atmosphereList = emptyList<String>()
+        val atmosphereJSONArray = diaryObject["atmosphere"] as JSONArray
+        for (i: Int in atmosphereJSONArray.indices) {
+            atmosphereList = atmosphereList.plus(atmosphereJSONArray[i].toString())
+        }
+
+        var keywordList = emptyList<String>()
+        val keywordJSONArray = diaryObject["keyword"] as JSONArray
+        for (i: Int in keywordJSONArray.indices) {
+            keywordList = keywordList.plus(keywordJSONArray[i].toString())
+        }
+
+        val text = diaryObject["text"] as String
+
+        var userContent = "분위기: ["
+        for (atmosphere in atmosphereList) {
+            userContent += ("$atmosphere, ")
+        }
+        userContent += "\b\b], 키워드: ["
+        for (keyword in keywordList) {
+            userContent += ("$keyword, ")
+        }
+        userContent += "\b\b], 텍스트: [$text]"
+
+        val responseContent = diaryObject["content"] as String
+
+        var question = ""
         for (pair in imageTextList) {
-            val result = request(pair.first)!!
-            val l = result.indexOf("분위기")
-            question +=
-                "키워드: ${result.substring(5, l - 2)}\n" +
-                "분위기: ${result.substring(l + 5)}\n" +
-                "텍스트: ${pair.second}\n\n"
+            val result = request(pair.first)
+            question += (result + ", 텍스트: [${pair.second}]\n")
         }
-        question += "일기: "
 
-        var text = question
-        for (i in 0 until 50) {
-            val textResponse = client.chatCompletion(
-                ChatCompletionRequest(
-                    model = ModelId("gpt-3.5-turbo"),
-                    messages = listOf(
-                        ChatMessage(
-                            role = ChatRole.User,
-                            content = text
+        var result = ""
+
+        val client = WebClient.create("https://api.openai.com/v1")
+        val prompt = "{\n" +
+                "    \"model\": \"gpt-4\",\n" +
+                "    \"messages\": [\n" +
+                "        {\n" +
+                "            \"role\": \"system\",\n" +
+                "            \"content\": \"$systemContent\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"role\": \"user\",\n" +
+                "            \"content\": \"$userContent\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"role\": \"assistant\",\n" +
+                "            \"content\": \"$responseContent\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"role\": \"user\",\n" +
+                "            \"content\": \"$question\"\n" +
+                "        }\n" +
+                "    ],\n" +
+                "    \"temperature\": 0.9,\n" +
+                "    \"stream\": true\n" +
+                "}"
+
+        val jsonParser = JSONParser()
+        val obj = jsonParser.parse(prompt) as JSONObject
+
+        val eventStream = client.post().uri("/chat/completions")
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer $token")
+            .bodyValue(obj)
+            .retrieve()
+            .bodyToFlux(String::class.java)
+            .publishOn(Schedulers.boundedElastic())
+            .doOnNext { response ->
+                if (response != "[DONE]") {
+                    val json = JSONParser().parse(response) as JSONObject
+                    val choices = json["choices"] as JSONArray
+                    val content = ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String?
+
+                    if (content == null) {
+                        sendingOperations.convertAndSend(
+                            "/queue/channel/${id}",
+                            WebSocketResponseDto(
+                                status = WebSocketStatus.EOF,
+                                content = result
+                            )
                         )
-                    ),
-                    temperature = 0.5,
-                    topP = 1.0,
-                    maxTokens = 16
-                )
-            )
-            text += textResponse.choices[0].message.content
-            val response = WebSocketResponseDto(
-                status = WebSocketStatus.SUCCESS,
-                content = textResponse.choices[0].message.content
-            )
-
-            sendingOperations.convertAndSend("/queue/channel/${id}", response)
-            if (text.substring(question.length).contains("&")) {
-                break
+                        redisDao.setValues(uuid, result, Duration.ofMillis(604800000L))
+                    } else {
+                        sendingOperations.convertAndSend(
+                            "/queue/channel/${id}",
+                            WebSocketResponseDto(
+                                status = WebSocketStatus.SUCCESS,
+                                content = content
+                            )
+                        )
+                        result += content
+                    }
+                    Thread.sleep(500)
+                }
             }
+
+        eventStream.subscribe()
+
+        return result
+    }
+
+    fun test(uuid: String, id: Long): Flux<SseResponseDto> {
+        val parser = JSONParser()
+        val mbtiReader = FileReader("src/main/resources/json/mbti.json")
+        val mbtiObject = parser.parse(mbtiReader) as JSONObject
+
+        val mbti = "INFP"
+        val systemContent = "당신의 MBTI는 ${mbti}이다. ${mbtiObject[mbti]}. 또한 당신은 세상에서 글을 잘 쓰는 작가이다. " +
+                "주어진 분위기와 키워드를 참고하여 일기를 작성하라."
+
+        val diaryReader = FileReader("src/main/resources/json/diary.json")
+        val diaryArray = parser.parse(diaryReader) as JSONArray
+        val diary = 0
+        val diaryObject = diaryArray[diary] as JSONObject
+
+        var atmosphereList = emptyList<String>()
+        val atmosphereJSONArray = diaryObject["atmosphere"] as JSONArray
+        for (i: Int in atmosphereJSONArray.indices) {
+            atmosphereList = atmosphereList.plus(atmosphereJSONArray[i].toString())
         }
 
-        return text.substring(question.length)
+        var keywordList = emptyList<String>()
+        val keywordJSONArray = diaryObject["keyword"] as JSONArray
+        for (i: Int in keywordJSONArray.indices) {
+            keywordList = keywordList.plus(keywordJSONArray[i].toString())
+        }
+
+        val text = diaryObject["text"] as String
+
+        var userContent = "분위기: ["
+        for (atmosphere in atmosphereList) {
+            userContent += ("$atmosphere, ")
+        }
+        userContent += "\b\b], 키워드: ["
+        for (keyword in keywordList) {
+            userContent += ("$keyword, ")
+        }
+        userContent += "\b\b], 텍스트: [$text]"
+
+        val responseContent = diaryObject["content"] as String
+
+        val question = "분위기: [평온함, 행복, 감사함], 텍스트: [커피숍, 책, 피크닉, 친구, 가족]"
+
+        val client = WebClient.create("https://api.openai.com/v1")
+        val prompt = "{\n" +
+                "    \"model\": \"gpt-4\",\n" +
+                "    \"messages\": [\n" +
+                "        {\n" +
+                "            \"role\": \"system\",\n" +
+                "            \"content\": \"$systemContent\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"role\": \"user\",\n" +
+                "            \"content\": \"$userContent\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"role\": \"assistant\",\n" +
+                "            \"content\": \"$responseContent\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"role\": \"user\",\n" +
+                "            \"content\": \"$question\"\n" +
+                "        }\n" +
+                "    ],\n" +
+                "    \"temperature\": 0.9,\n" +
+                "    \"stream\": true\n" +
+                "}"
+
+        val jsonParser = JSONParser()
+        val obj = jsonParser.parse(prompt) as JSONObject
+
+        var result = ""
+        var seq = 0
+
+        val eventStream = client.post().uri("/chat/completions")
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer $token")
+            .bodyValue(obj)
+            .accept(MediaType.TEXT_EVENT_STREAM)
+            .retrieve()
+            .bodyToFlux(String::class.java)
+            .doOnNext {
+                Thread.sleep(500)
+            }
+            .map {
+                if (it == "[DONE]") {
+                    SseResponseDto(
+                        seq = seq++,
+                        status = WebSocketStatus.EOF,
+                        content = result
+                    )
+                } else {
+                    val json = JSONParser().parse(it) as JSONObject
+                    val choices = json["choices"] as JSONArray
+                    val content = ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String?
+                    result += content
+                    SseResponseDto(
+                        seq = seq++,
+                        status = WebSocketStatus.SUCCESS,
+                        content = content ?: ""
+                    )
+                }
+            }
+
+        return eventStream
     }
 
 }
