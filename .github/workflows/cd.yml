@@ -33,14 +33,14 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "diary.json"
-          json: ${{ secrets.DIARY_JSON }}
+          json: ${{ secrets.DIARY_JSON }} | base64 --decode
           dir: "./src/main/resources/json/"
       - name: Create JSON
         id: mbti-json
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "mbti.json"
-          json: ${{ secrets.mbti }}
+          json: ${{ secrets.MBTI_JSON }} | base64 --decode
           dir: "./src/main/resources/json/"
 
       - name: Web Docker Build and Push
