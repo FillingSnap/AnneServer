@@ -27,7 +27,7 @@ jobs:
           mkdir -p ./src/main/resources/json
           echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
           echo "${{ secrets.DIARY_JSON }}" | base64 --decode > ./src/main/resources/json/diary.json
-          echo "${{ secrets.MBTI_JSON }}" | base64 --decode > ./src/main/resources/json/mbti.json
+#          echo "${{ secrets.MBTI_JSON }}" | base64 --decode > ./src/main/resources/json/mbti.json
         shell: bash
 
       - name: Web Docker Build and Push
