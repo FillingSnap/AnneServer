@@ -5,6 +5,7 @@ COPY src/main /build/src/main
 
 COPY build.gradle.kts settings.gradle.kts /build/
 
+RUN ls -R /build/src/main
 RUN cat /build/src/main/diary.json
 RUN cat /build/src/main/mbti.json
 
