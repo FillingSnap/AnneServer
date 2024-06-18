@@ -26,9 +26,22 @@ jobs:
         run: |
           mkdir -p ./src/main/resources/json
           echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
-          echo "${{ secrets.DIARY_JSON }}" | base64 --decode > ./src/main/resources/json/diary.json
-#          echo "${{ secrets.MBTI_JSON }}" | base64 --decode > ./src/main/resources/json/mbti.json
         shell: bash
+
+      - name: Create JSON
+        id: diary-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "diary.json"
+          json: ${{ secrets.DIARY_JSON }}
+          dir: "./src/main/resources/json/"
+      - name: Create JSON
+        id: mbti-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "mbti.json"
+          json: ${{ secrets.mbti }}
+          dir: "./src/main/resources/json/"
 
       - name: Web Docker Build and Push
         run: |
