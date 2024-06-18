@@ -5,16 +5,14 @@ COPY src/main /build/src/main
 
 COPY build.gradle.kts settings.gradle.kts /build/
 
-RUN ls -R /build/src/main
-RUN cat /build/src/main/resources/json/diary.json
-RUN cat /build/src/main/resources/json/mbti.json
-
 RUN gradle build -x test --parallel --continue > /dev/null 2>&1 || true
 
 FROM openjdk:17.0.1-jdk-slim AS run
 WORKDIR /app
 
 RUN adduser --system --group app-api
+
+RUN ls -R /build
 
 COPY --from=build --chown=app-api:app-api /build/build/libs/*.jar ./app.jar
 COPY --from=build --chown=app-api:app-api /build/build/src/main/resources/json/diary.json ./diary.json
