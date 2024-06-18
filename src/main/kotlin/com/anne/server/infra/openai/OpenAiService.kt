@@ -296,6 +296,7 @@ class OpenAiService (
                     val json = JSONParser().parse(it) as JSONObject
                     val choices = json["choices"] as JSONArray
                     val content = ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String?
+                    println(content)
                     result += content
                     SseResponseDto(
                         seq = seq++,
