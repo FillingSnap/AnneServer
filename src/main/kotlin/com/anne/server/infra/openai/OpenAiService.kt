@@ -282,9 +282,7 @@ class OpenAiService (
             .accept(MediaType.TEXT_EVENT_STREAM)
             .retrieve()
             .bodyToFlux(String::class.java)
-            .doOnNext {
-                Thread.sleep(500)
-            }
+            .delayElements(Duration.ofMillis(500))
             .map {
                 if (it == "[DONE]") {
                     SseResponseDto(
