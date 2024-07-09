@@ -202,7 +202,7 @@ class OpenAiService (
         return result
     }
 
-    fun test(uuid: String, id: Long): Flux<SseResponseDto> {
+    fun test(uuid: String, id: Long, delay: Long): Flux<SseResponseDto> {
         val parser = JSONParser()
         val mbtiReader = FileReader(mbtiJson)
         val mbtiObject = parser.parse(mbtiReader) as JSONObject
@@ -282,7 +282,7 @@ class OpenAiService (
             .accept(MediaType.TEXT_EVENT_STREAM)
             .retrieve()
             .bodyToFlux(String::class.java)
-            .delayElements(Duration.ofMillis(500))
+            .delayElements(Duration.ofMillis(delay))
             .map {
                 if (it == "[DONE]") {
                     SseResponseDto(
@@ -294,7 +294,6 @@ class OpenAiService (
                     val json = JSONParser().parse(it) as JSONObject
                     val choices = json["choices"] as JSONArray
                     val content = ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String?
-                    println(content)
                     result += content
                     SseResponseDto(
                         seq = seq++,

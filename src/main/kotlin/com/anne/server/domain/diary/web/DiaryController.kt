@@ -67,8 +67,8 @@ class DiaryController (
 
     @Operation(summary = "SSE 테스트")
     @GetMapping("/test", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun test(): Flux<SseResponseDto> {
-        return openAiService.test("eab0dc71-1b97-4228-ab51-5f92c1ac9315", 1)
+    fun test(@RequestParam delay: Long): Flux<SseResponseDto> {
+        return openAiService.test("eab0dc71-1b97-4228-ab51-5f92c1ac9315", 1, delay)
     }
 
 }
