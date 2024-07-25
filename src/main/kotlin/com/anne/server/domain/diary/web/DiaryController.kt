@@ -5,7 +5,6 @@ import com.anne.server.domain.diary.dto.response.DiaryWithStoryResponseDto
 import com.anne.server.domain.diary.dto.request.DiaryGenerateRequestDto
 import com.anne.server.domain.diary.service.DiaryService
 import com.anne.server.global.validation.ValidationSequence
-import com.anne.server.global.websocket.dto.WebSocketResponseDto
 import com.anne.server.infra.openai.OpenAiService
 import com.anne.server.infra.openai.dto.SseResponseDto
 import io.swagger.v3.oas.annotations.Operation
@@ -33,10 +32,11 @@ class DiaryController (
     @Operation(summary = "일기 생성")
     @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun generateDiary(
+        @RequestParam delay: Long,
         @RequestPart(value = "imageList") imageList: List<MultipartFile>?,
         @RequestPart(value = "requestList") @Validated(value = [ValidationSequence::class]) request: DiaryGenerateRequestDto
-    ): ResponseEntity<Unit> {
-        return ResponseEntity.ok().body(diaryService.generateDiary(imageList, request))
+    ): ResponseEntity<Flux<SseResponseDto>> {
+        return ResponseEntity.ok().body(diaryService.generateDiary(imageList, request, delay))
     }
 
     @Operation(summary = "임시 일기 조회")
@@ -68,7 +68,7 @@ class DiaryController (
     @Operation(summary = "SSE 테스트")
     @GetMapping("/test", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun test(@RequestParam delay: Long): Flux<SseResponseDto> {
-        return openAiService.test("eab0dc71-1b97-4228-ab51-5f92c1ac9315", 1, delay)
+        return openAiService.test(delay)
     }
 
 }

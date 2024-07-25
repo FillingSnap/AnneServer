@@ -1,12 +1,11 @@
-package com.anne.server.global.websocket
+package com.anne.server.infra.openai.dto
 
-enum class WebSocketStatus (
+enum class SseStatus (
 
     val value: String
 
 ) {
 
-    UUID("UUID"),
     SUCCESS("SUCCESS"),
     ERROR("ERROR"),
     EOF("EOF")
