@@ -1,11 +1,9 @@
 package com.anne.server.infra.openai
 
 import com.anne.server.infra.openai.dto.ChatResponseDto
-import com.anne.server.global.websocket.dto.WebSocketResponseDto
-import com.anne.server.global.websocket.WebSocketStatus
 import com.anne.server.infra.openai.dto.SseResponseDto
+import com.anne.server.infra.openai.dto.SseStatus
 import com.anne.server.infra.redis.RedisDao
-import io.netty.channel.EventLoopGroup
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
@@ -14,12 +12,10 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
-import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
-import reactor.core.scheduler.Schedulers
 import java.io.FileReader
 import java.time.Duration
 
@@ -29,7 +25,11 @@ class OpenAiService (
     @Value("\${openai.token}")
     private val token: String,
 
-    private val sendingOperations: SimpMessageSendingOperations,
+    @Value("\${json.diary}")
+    private val diaryJson: String,
+
+    @Value("\${json.mbti}")
+    private val mbtiJson: String,
 
     private val restTemplate: RestTemplate,
 
@@ -42,7 +42,7 @@ class OpenAiService (
         headers.set("Authorization", "Bearer $token")
 
         val jsonStr = "{\n" +
-                "    \"model\": \"gpt-4-vision-preview\", \n" +
+                "    \"model\": \"gpt-4o\", \n" +
                 "    \"messages\": [\n" +
                 "        {\n" +
                 "            \"role\": \"user\",\n" +
@@ -79,16 +79,16 @@ class OpenAiService (
         return response.body!!.choices[0].message.content
     }
 
-    fun openAi(uuid: String, id: Long, imageTextList: List<Pair<String, String>>): String {
+    fun openAi(uuid: String, id: Long, imageTextList: List<Pair<String, String>>, delay: Long): Flux<SseResponseDto> {
         val parser = JSONParser()
-        val mbtiReader = FileReader("src/main/resources/json/mbti.json")
+        val mbtiReader = FileReader(mbtiJson)
         val mbtiObject = parser.parse(mbtiReader) as JSONObject
 
         val mbti = "INFP"
         val systemContent = "당신의 MBTI는 ${mbti}이다. ${mbtiObject[mbti]}. 또한 당신은 세상에서 글을 잘 쓰는 작가이다. " +
                 "주어진 분위기와 키워드를 참고하여 일기를 작성하라."
 
-        val diaryReader = FileReader("src/main/resources/json/diary.json")
+        val diaryReader = FileReader(diaryJson)
         val diaryArray = parser.parse(diaryReader) as JSONArray
         val diary = 0
         val diaryObject = diaryArray[diary] as JSONObject
@@ -124,119 +124,6 @@ class OpenAiService (
             val result = request(pair.first)
             question += (result + ", 텍스트: [${pair.second}]\n")
         }
-
-        var result = ""
-
-        val client = WebClient.create("https://api.openai.com/v1")
-        val prompt = "{\n" +
-                "    \"model\": \"gpt-4\",\n" +
-                "    \"messages\": [\n" +
-                "        {\n" +
-                "            \"role\": \"system\",\n" +
-                "            \"content\": \"$systemContent\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"role\": \"user\",\n" +
-                "            \"content\": \"$userContent\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"role\": \"assistant\",\n" +
-                "            \"content\": \"$responseContent\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"role\": \"user\",\n" +
-                "            \"content\": \"$question\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"temperature\": 0.9,\n" +
-                "    \"stream\": true\n" +
-                "}"
-
-        val jsonParser = JSONParser()
-        val obj = jsonParser.parse(prompt) as JSONObject
-
-        val eventStream = client.post().uri("/chat/completions")
-            .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer $token")
-            .bodyValue(obj)
-            .retrieve()
-            .bodyToFlux(String::class.java)
-            .publishOn(Schedulers.boundedElastic())
-            .doOnNext { response ->
-                if (response != "[DONE]") {
-                    val json = JSONParser().parse(response) as JSONObject
-                    val choices = json["choices"] as JSONArray
-                    val content = ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String?
-
-                    if (content == null) {
-                        sendingOperations.convertAndSend(
-                            "/queue/channel/${id}",
-                            WebSocketResponseDto(
-                                status = WebSocketStatus.EOF,
-                                content = result
-                            )
-                        )
-                        redisDao.setValues(uuid, result, Duration.ofMillis(604800000L))
-                    } else {
-                        sendingOperations.convertAndSend(
-                            "/queue/channel/${id}",
-                            WebSocketResponseDto(
-                                status = WebSocketStatus.SUCCESS,
-                                content = content
-                            )
-                        )
-                        result += content
-                    }
-                    Thread.sleep(500)
-                }
-            }
-
-        eventStream.subscribe()
-
-        return result
-    }
-
-    fun test(uuid: String, id: Long): Flux<SseResponseDto> {
-        val parser = JSONParser()
-        val mbtiReader = FileReader("src/main/resources/json/mbti.json")
-        val mbtiObject = parser.parse(mbtiReader) as JSONObject
-
-        val mbti = "INFP"
-        val systemContent = "당신의 MBTI는 ${mbti}이다. ${mbtiObject[mbti]}. 또한 당신은 세상에서 글을 잘 쓰는 작가이다. " +
-                "주어진 분위기와 키워드를 참고하여 일기를 작성하라."
-
-        val diaryReader = FileReader("src/main/resources/json/diary.json")
-        val diaryArray = parser.parse(diaryReader) as JSONArray
-        val diary = 0
-        val diaryObject = diaryArray[diary] as JSONObject
-
-        var atmosphereList = emptyList<String>()
-        val atmosphereJSONArray = diaryObject["atmosphere"] as JSONArray
-        for (i: Int in atmosphereJSONArray.indices) {
-            atmosphereList = atmosphereList.plus(atmosphereJSONArray[i].toString())
-        }
-
-        var keywordList = emptyList<String>()
-        val keywordJSONArray = diaryObject["keyword"] as JSONArray
-        for (i: Int in keywordJSONArray.indices) {
-            keywordList = keywordList.plus(keywordJSONArray[i].toString())
-        }
-
-        val text = diaryObject["text"] as String
-
-        var userContent = "분위기: ["
-        for (atmosphere in atmosphereList) {
-            userContent += ("$atmosphere, ")
-        }
-        userContent += "\b\b], 키워드: ["
-        for (keyword in keywordList) {
-            userContent += ("$keyword, ")
-        }
-        userContent += "\b\b], 텍스트: [$text]"
-
-        val responseContent = diaryObject["content"] as String
-
-        val question = "분위기: [평온함, 행복, 감사함], 텍스트: [커피숍, 책, 피크닉, 친구, 가족]"
 
         val client = WebClient.create("https://api.openai.com/v1")
         val prompt = "{\n" +
@@ -276,27 +163,75 @@ class OpenAiService (
             .accept(MediaType.TEXT_EVENT_STREAM)
             .retrieve()
             .bodyToFlux(String::class.java)
-            .doOnNext {
-                Thread.sleep(500)
-            }
+            .delayElements(Duration.ofMillis(delay))
             .map {
                 if (it == "[DONE]") {
                     SseResponseDto(
                         seq = seq++,
-                        status = WebSocketStatus.EOF,
+                        status = SseStatus.EOF,
                         content = result
                     )
                 } else {
                     val json = JSONParser().parse(it) as JSONObject
                     val choices = json["choices"] as JSONArray
-                    val content = ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String?
+                    val content = ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String? ?: ""
                     result += content
                     SseResponseDto(
                         seq = seq++,
-                        status = WebSocketStatus.SUCCESS,
-                        content = content ?: ""
+                        status = SseStatus.SUCCESS,
+                        content = content
                     )
                 }
+            }
+            .doOnComplete {
+                redisDao.setValues(uuid, result, Duration.ofMillis(604800000L))
+            }.doOnError {
+                SseResponseDto(
+                    seq = seq++,
+                    status = SseStatus.ERROR,
+                    content = it.message
+                )
+            }
+
+        return eventStream
+    }
+
+    fun test(delay: Long): Flux<SseResponseDto> {
+        var seq = 0
+        val result = "식사를 준비하며 스테이크와 야채를 손질하는 것은 항상 맛있는 시간이다. 스테이크를구워내는 소리와 야채가 향기로 " +
+                "가득한 주방에서의 시간은 언제나 아름다운 순간이다. 나무 도마 위에서 재료들을 다듬고 음식을 만들어내는 과정은 맛있는 " +
+                "요리를 만들어냄으로써 즐거움을 더해준다. 이런 소중한 시간을 보내며, 맛있는 음식을 먹을 때의 만족감은 무엇과도 바꿀 수 " +
+                "없는 특별한 순간이다. 하늘을 바라보며 구름이 맑은 하늘을 가려주는 모습은 평화로움과 상쾌함을 느끼게 해준다. 구름 " +
+                "사이로 비치는 햇살은 마치 세상의 모든 불평이 사라지고 마음이 맑아지는 듯한 기분을 안겨준다. 이런 풍경을 바라보며 " +
+                "산뜻한 순간에는 감사함을 느끼며, 새로운 하루를 시작하고 싶어진다. 카페에서 손님들을 맞이하며 커피를 내리고 소품을 " +
+                "정리하는 일상적인 모습은 편안함을 안겨준다. 카페 안에서 일어나는 일상의 소소한 순간들을 바라보며, 이곳에서 보내는 " +
+                "시간은 언제나 특별하고 소중하다. 손님들과 함께하는 이 시간은 편안하고 소중한 것이다. 손님들과 이야기를 나누며 커피 한 " +
+                "잔을 즐기는 것은 일상적인 활동이지만, 그 속에는 소중한 소품들과 이야기가 담겨있어 더욱 의미있는 시간이다. 카페 " +
+                "안에서의 일상은 특별함을 발견할 수 있는 소중한 시간이다. 이런 소중한 순간들을 보면서, 일상 속에 숨겨진 아름다움을 " +
+                "발견하고 감사함을 느낀다. "
+        val list = result.split("")
+        val eventStream = Flux.fromIterable(list + "[DONE]")
+            .delayElements(Duration.ofMillis(delay))
+            .map {
+                if (it == "[DONE]") {
+                    SseResponseDto(
+                        seq = seq++,
+                        status = SseStatus.EOF,
+                        content = result
+                    )
+                } else {
+                    SseResponseDto(
+                        seq = seq++,
+                        status = SseStatus.SUCCESS,
+                        content = it ?: ""
+                    )
+                }
+            }.doOnError {
+                SseResponseDto(
+                    seq = seq++,
+                    status = SseStatus.ERROR,
+                    content = it.message
+                )
             }
 
         return eventStream
