@@ -30,7 +30,7 @@ class DiaryController (
 ) {
 
     @Operation(summary = "일기 생성")
-    @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun generateDiary(
         @RequestParam delay: Long,
         @RequestPart(value = "imageList") imageList: List<MultipartFile>?,
