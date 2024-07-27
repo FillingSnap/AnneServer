@@ -8,20 +8,19 @@ import com.anne.server.domain.diary.dto.request.DiaryGenerateRequestDto
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.story.service.StoryService
 import com.anne.server.domain.user.domain.User
-import com.anne.server.global.websocket.dto.WebSocketResponseDto
-import com.anne.server.global.websocket.WebSocketStatus
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
 import com.anne.server.infra.amazon.AwsS3Service
 import com.anne.server.infra.openai.OpenAiService
+import com.anne.server.infra.openai.dto.SseResponseDto
 import com.anne.server.infra.redis.RedisDao
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import reactor.core.publisher.Flux
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.util.*
@@ -39,8 +38,6 @@ class DiaryService (
     private val awsS3Service: AwsS3Service,
 
     private val openAiService: OpenAiService,
-
-    private val sendingOperations: SimpMessageSendingOperations,
 
     private val redisDao: RedisDao
 
@@ -63,7 +60,7 @@ class DiaryService (
         return byteArrayOutputStream.toByteArray()
     }
 
-    fun generateDiary(imageList: List<MultipartFile>?, request: DiaryGenerateRequestDto) {
+    fun generateDiary(imageList: List<MultipartFile>?, request: DiaryGenerateRequestDto, delay: Long): Flux<SseResponseDto> {
         val user = SecurityContextHolder.getContext().authentication.principal as User
         val textList = request.textList
         val uuid = request.uuid!!
@@ -78,27 +75,7 @@ class DiaryService (
             Pair(Base64.getEncoder().encodeToString(imageResize(it.image)), it.text)
         }
 
-        sendingOperations.convertAndSend(
-            "/queue/channel/${user.id!!}",
-            WebSocketResponseDto(
-                status = WebSocketStatus.UUID,
-                content = uuid
-            )
-        )
-
-        Thread {
-            try {
-                openAiService.openAi(uuid, user.id!!, imageTextList)
-            } catch (e: Exception) {
-                sendingOperations.convertAndSend(
-                    "/queue/channel/${user.id!!}",
-                    WebSocketResponseDto(
-                        status = WebSocketStatus.ERROR,
-                        content = e.message
-                    )
-                )
-            }
-        }.start()
+        return openAiService.openAi(uuid, user.id!!, imageTextList, delay)
     }
 
     fun getTemporalDiary(uuid: String): String {
