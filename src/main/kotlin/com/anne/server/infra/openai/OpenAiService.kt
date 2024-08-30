@@ -1,9 +1,12 @@
 package com.anne.server.infra.openai
 
+import com.anne.server.domain.diary.dao.DiaryRepository
+import com.anne.server.domain.diary.domain.Diary
+import com.anne.server.domain.story.dao.StoryRepository
+import com.anne.server.domain.user.domain.User
 import com.anne.server.infra.openai.dto.ChatResponseDto
 import com.anne.server.infra.openai.dto.SseResponseDto
 import com.anne.server.infra.openai.dto.SseStatus
-import com.anne.server.infra.redis.RedisDao
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
@@ -12,6 +15,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
@@ -33,7 +37,9 @@ class OpenAiService (
 
     private val restTemplate: RestTemplate,
 
-    private val redisDao: RedisDao
+    private val storyRepository: StoryRepository,
+
+    private val diaryRepository: DiaryRepository
 
 ) {
 
@@ -79,7 +85,8 @@ class OpenAiService (
         return response.body!!.choices[0].message.content
     }
 
-    fun openAi(uuid: String, id: Long, imageTextList: List<Pair<String, String>>, delay: Long): Flux<SseResponseDto> {
+    fun openAi(uuid: String, imageTextList: List<Pair<String, String>>, delay: Long): Flux<SseResponseDto> {
+        val user = SecurityContextHolder.getContext().authentication.principal as User
         val parser = JSONParser()
         val mbtiReader = FileReader(mbtiJson)
         val mbtiObject = parser.parse(mbtiReader) as JSONObject
@@ -154,7 +161,6 @@ class OpenAiService (
         val obj = jsonParser.parse(prompt) as JSONObject
 
         var result = ""
-        var seq = 0
 
         val eventStream = client.post().uri("/chat/completions")
             .header("Content-Type", "application/json")
@@ -165,29 +171,49 @@ class OpenAiService (
             .bodyToFlux(String::class.java)
             .delayElements(Duration.ofMillis(delay))
             .map {
+                println(it)
                 if (it == "[DONE]") {
                     SseResponseDto(
-                        seq = seq++,
                         status = SseStatus.EOF,
                         content = result
                     )
                 } else {
                     val json = JSONParser().parse(it) as JSONObject
+                    if (json["type"] != null && json["type"] == "server_error") {
+                        SseResponseDto(
+                            status = SseStatus.ERROR,
+                            content = (json["error"] as JSONObject)["message"] as String
+                        )
+                    }
+
                     val choices = json["choices"] as JSONArray
-                    val content = ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String? ?: ""
+                    val content = if (choices[0] != null) {
+                        ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String? ?: ""
+                    } else {
+                        ""
+                    }
                     result += content
                     SseResponseDto(
-                        seq = seq++,
                         status = SseStatus.SUCCESS,
                         content = content
                     )
                 }
             }
             .doOnComplete {
-                redisDao.setValues(uuid, result, Duration.ofMillis(604800000L))
+                val storyList = storyRepository.findAllByUuid(uuid)
+
+                val newDiary = diaryRepository.save(
+                    Diary(
+                    emotion = "null",
+                    content = result,
+                    user = user,
+                    uuid = uuid
+                ))
+
+                storyList.forEach { it.diary = newDiary }
+                storyRepository.saveAll(storyList)
             }.doOnError {
                 SseResponseDto(
-                    seq = seq++,
                     status = SseStatus.ERROR,
                     content = it.message
                 )
@@ -197,7 +223,6 @@ class OpenAiService (
     }
 
     fun test(delay: Long): Flux<SseResponseDto> {
-        var seq = 0
         val result = "식사를 준비하며 스테이크와 야채를 손질하는 것은 항상 맛있는 시간이다. 스테이크를구워내는 소리와 야채가 향기로 " +
                 "가득한 주방에서의 시간은 언제나 아름다운 순간이다. 나무 도마 위에서 재료들을 다듬고 음식을 만들어내는 과정은 맛있는 " +
                 "요리를 만들어냄으로써 즐거움을 더해준다. 이런 소중한 시간을 보내며, 맛있는 음식을 먹을 때의 만족감은 무엇과도 바꿀 수 " +
@@ -215,20 +240,17 @@ class OpenAiService (
             .map {
                 if (it == "[DONE]") {
                     SseResponseDto(
-                        seq = seq++,
                         status = SseStatus.EOF,
                         content = result
                     )
                 } else {
                     SseResponseDto(
-                        seq = seq++,
                         status = SseStatus.SUCCESS,
                         content = it ?: ""
                     )
                 }
             }.doOnError {
                 SseResponseDto(
-                    seq = seq++,
                     status = SseStatus.ERROR,
                     content = it.message
                 )

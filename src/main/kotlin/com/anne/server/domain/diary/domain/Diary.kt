@@ -15,7 +15,7 @@ class Diary (
     val emotion: String,
 
     @Column(columnDefinition = "LONGTEXT")
-    val content: String,
+    var content: String,
 
     val uuid: String,
 
