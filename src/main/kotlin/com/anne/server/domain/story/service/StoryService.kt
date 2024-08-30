@@ -7,9 +7,7 @@ import com.anne.server.domain.user.domain.User
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
 import com.anne.server.infra.amazon.AwsS3Service
-import com.anne.server.infra.redis.RedisDao
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -21,8 +19,6 @@ class StoryService(
     private val storyRepository: StoryRepository,
 
     private val awsS3Service: AwsS3Service,
-
-    private val redisDao: RedisDao
 
 ) {
 
@@ -72,24 +68,6 @@ class StoryService(
         }
 
         return storyRepository.saveAll(storyList).map { StudySimpleResponseDto(it) }
-    }
-
-    @Scheduled(cron = "0 0 * * * *")
-    fun deleteStories() {
-        val nullDiaryStoryList = storyRepository.findAllByDiary(null)
-        val deleteStoryList = arrayListOf<Story>()
-        for (story in nullDiaryStoryList) {
-            if (redisDao.getValues(story.uuid) == null) {
-                try {
-                    awsS3Service.deleteObject(story.image)
-                    deleteStoryList.add(story)
-                } catch (_: Exception) {
-                    ;
-                }
-            }
-        }
-
-        storyRepository.deleteAll(deleteStoryList)
     }
 
 }
