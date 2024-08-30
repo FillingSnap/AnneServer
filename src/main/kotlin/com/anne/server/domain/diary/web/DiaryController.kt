@@ -1,8 +1,8 @@
 package com.anne.server.domain.diary.web
 
-import com.anne.server.domain.diary.dto.request.DiaryCreateRequestDto
 import com.anne.server.domain.diary.dto.response.DiaryWithStoryResponseDto
 import com.anne.server.domain.diary.dto.request.DiaryGenerateRequestDto
+import com.anne.server.domain.diary.dto.request.DiaryUpdateRequestDto
 import com.anne.server.domain.diary.service.DiaryService
 import com.anne.server.global.validation.ValidationSequence
 import com.anne.server.infra.openai.OpenAiService
@@ -30,25 +30,16 @@ class DiaryController (
 ) {
 
     @Operation(summary = "일기 생성")
-    @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun generateDiary(
+    @PostMapping(
+        value = ["/generate"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+        produces = [MediaType.TEXT_EVENT_STREAM_VALUE]
+    ) fun generateDiary(
         @RequestParam delay: Long,
         @RequestPart(value = "imageList") imageList: List<MultipartFile>?,
         @RequestPart(value = "requestList") @Validated(value = [ValidationSequence::class]) request: DiaryGenerateRequestDto
     ): ResponseEntity<Flux<SseResponseDto>> {
         return ResponseEntity.ok().body(diaryService.generateDiary(imageList, request, delay))
-    }
-
-    @Operation(summary = "임시 일기 조회")
-    @GetMapping("/temporal/{uuid}")
-    fun getTemporalDiary(@PathVariable("uuid") uuid: String): ResponseEntity<String> {
-        return ResponseEntity.ok().body(diaryService.getTemporalDiary(uuid))
-    }
-
-    @Operation(summary = "일기 저장")
-    @PostMapping("/create")
-    fun createDiary(@RequestBody @Validated(value = [ValidationSequence::class]) request: DiaryCreateRequestDto): ResponseEntity<DiaryWithStoryResponseDto> {
-        return ResponseEntity.ok().body(diaryService.createDiary(request))
     }
 
     @Operation(summary = "일기 전체 조회")
@@ -63,6 +54,15 @@ class DiaryController (
     @GetMapping("/{id}")
     fun getDiaryList(@PathVariable("id") id: Long): ResponseEntity<DiaryWithStoryResponseDto> {
         return ResponseEntity.ok().body(diaryService.getDiaryById(id))
+    }
+
+    @Operation(summary = "일기 수정")
+    @PutMapping("/update/{id}")
+    fun updateDiary(
+        @PathVariable("id") id: Long,
+        @RequestBody @Validated(value = [ValidationSequence::class]) request: DiaryUpdateRequestDto
+    ): ResponseEntity<DiaryWithStoryResponseDto> {
+        return ResponseEntity.ok().body(diaryService.updateDiary(id, request))
     }
 
     @Operation(summary = "SSE 테스트")

@@ -1,11 +1,9 @@
 package com.anne.server.domain.diary.service
 
 import com.anne.server.domain.diary.dao.DiaryRepository
-import com.anne.server.domain.diary.domain.Diary
-import com.anne.server.domain.diary.dto.request.DiaryCreateRequestDto
 import com.anne.server.domain.diary.dto.response.DiaryWithStoryResponseDto
 import com.anne.server.domain.diary.dto.request.DiaryGenerateRequestDto
-import com.anne.server.domain.story.dao.StoryRepository
+import com.anne.server.domain.diary.dto.request.DiaryUpdateRequestDto
 import com.anne.server.domain.story.service.StoryService
 import com.anne.server.domain.user.domain.User
 import com.anne.server.global.exception.CustomException
@@ -13,7 +11,7 @@ import com.anne.server.global.exception.ErrorCode
 import com.anne.server.infra.amazon.AwsS3Service
 import com.anne.server.infra.openai.OpenAiService
 import com.anne.server.infra.openai.dto.SseResponseDto
-import com.anne.server.infra.redis.RedisDao
+import com.anne.server.infra.openai.dto.SseStatus
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -31,15 +29,11 @@ class DiaryService (
 
     private val diaryRepository: DiaryRepository,
 
-    private val storyRepository: StoryRepository,
-
     private val storyService: StoryService,
 
     private val awsS3Service: AwsS3Service,
 
     private val openAiService: OpenAiService,
-
-    private val redisDao: RedisDao
 
 ) {
 
@@ -61,12 +55,16 @@ class DiaryService (
     }
 
     fun generateDiary(imageList: List<MultipartFile>?, request: DiaryGenerateRequestDto, delay: Long): Flux<SseResponseDto> {
-        val user = SecurityContextHolder.getContext().authentication.principal as User
         val textList = request.textList
         val uuid = request.uuid!!
 
         if (diaryRepository.existsDiaryByUuid(uuid)) {
-            throw CustomException(ErrorCode.ALREADY_EXIST_UUID)
+            return Flux.just(
+                SseResponseDto(
+                    status = SseStatus.ERROR,
+                    content = ErrorCode.ALREADY_EXIST_UUID.message
+                )
+            )
         }
 
         val storyList = storyService.createStories(imageList, textList, uuid)
@@ -75,40 +73,7 @@ class DiaryService (
             Pair(Base64.getEncoder().encodeToString(imageResize(it.image)), it.text)
         }
 
-        return openAiService.openAi(uuid, user.id!!, imageTextList, delay)
-    }
-
-    fun getTemporalDiary(uuid: String): String {
-        val temporalDiary = redisDao.getValues(uuid) ?: throw CustomException(ErrorCode.TEMPORAL_DIARY_NOT_FOUND)
-
-        return temporalDiary
-    }
-
-    fun createDiary(request: DiaryCreateRequestDto): DiaryWithStoryResponseDto {
-        val user = SecurityContextHolder.getContext().authentication.principal as User
-        val uuid = request.uuid!!
-
-        if (diaryRepository.existsDiaryByUuid(uuid)) {
-            throw CustomException(ErrorCode.ALREADY_EXIST_UUID)
-        }
-
-        redisDao.getValues(uuid) ?: throw CustomException(ErrorCode.TEMPORAL_DIARY_NOT_FOUND)
-
-        val storyList = storyRepository.findAllByUuid(uuid)
-
-        val newDiary = diaryRepository.save(Diary(
-            emotion = "null",
-            content = request.content!!,
-            user = user,
-            uuid = uuid
-        ))
-
-        storyList.forEach { it.diary = newDiary }
-        storyRepository.saveAll(storyList)
-
-        redisDao.deleteValues(uuid)
-
-        return DiaryWithStoryResponseDto(newDiary)
+        return openAiService.openAi(uuid, imageTextList, delay)
     }
 
     fun getDiaryList(pageable: Pageable): Page<DiaryWithStoryResponseDto> {
@@ -135,6 +100,24 @@ class DiaryService (
         if (user.id!! != diary.user.id!!) {
             throw CustomException(ErrorCode.NOT_YOUR_DIARY)
         }
+
+        return DiaryWithStoryResponseDto(diary)
+    }
+
+    fun updateDiary(id: Long, request: DiaryUpdateRequestDto): DiaryWithStoryResponseDto {
+        val user = SecurityContextHolder.getContext().authentication.principal as User
+
+        val diary = diaryRepository.findByIdOrNull(id)
+            ?: throw CustomException(ErrorCode.DIARY_NOT_FOUND)
+
+        // 해당 일기의 소유자가 아닌 경우
+        if (user.id!! != diary.user.id!!) {
+            throw CustomException(ErrorCode.NOT_YOUR_DIARY)
+        }
+
+        diary.content = request.content
+
+        diaryRepository.save(diary)
 
         return DiaryWithStoryResponseDto(diary)
     }
