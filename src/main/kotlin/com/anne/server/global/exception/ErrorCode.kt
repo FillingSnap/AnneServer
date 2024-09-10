@@ -15,10 +15,10 @@ enum class ErrorCode (
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다"),
     STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "스토리를 찾을 수 없습니다"),
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "일기를 찾을 수 없습니다"),
-    TEMPORAL_DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "임시 저장된 일기를 찾을 수 없습니다"),
     WRONG_URL(HttpStatus.NOT_FOUND, "잘못된 url 입니다"),
     WRONG_PAGE(HttpStatus.NOT_FOUND, "잘못된 페이지 번호 입니다"),
 
+    TOO_MANY_STYLES(HttpStatus.BAD_REQUEST, "일기 스타일의 갯수가 너무 많습니다"),
     ALREADY_EXIST_UUID(HttpStatus.BAD_REQUEST, "이미 존재하는 UUID 입니다"),
     IMAGE_SAVE_ERROR(HttpStatus.BAD_REQUEST, "이미지 업로드 도중 문제가 발생했습니다"),
     IMAGE_TEXT_REQUIRED(HttpStatus.BAD_REQUEST, "사진과 설명은 최소 한 개 이상 존재해야 합니다"),

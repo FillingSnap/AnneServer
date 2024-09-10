@@ -9,6 +9,7 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import jakarta.annotation.PostConstruct
+import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.stereotype.Service
@@ -68,7 +69,7 @@ class JwtAuthenticationService (
             throw CustomException(ErrorCode.INVALID_TOKEN)
         }
 
-        val user = userService.loadUserById(id.toLong())
+        val user = userService.getUserById(id.toLong())
         val claims = Jwts.claims()
             .subject(id)
             .add(mapOf(Pair("provider", user.provider), Pair("uid", user.uid)))
@@ -89,7 +90,7 @@ class JwtAuthenticationService (
 
     fun verifyToken(token: String): Boolean {
         return try {
-            val user = userService.loadUserById(getId(token).toLong())
+            val user = userService.getUserById(getId(token).toLong())
 
             val claims = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(secretKey.toByteArray(Charsets.UTF_8)))
@@ -122,7 +123,7 @@ class JwtAuthenticationService (
 
     fun getAuthentication(token: String): UsernamePasswordAuthenticationToken {
         val id: String = getId(token)
-        val user = userService.loadUserById(id.toLong())
+        val user = userService.getUserById(id.toLong())
 
         return UsernamePasswordAuthenticationToken(
             user,

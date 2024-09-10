@@ -20,6 +20,9 @@ class User (
 
     val provider: String,
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    var styleList: List<String> = ArrayList(),
+
     @OneToMany(
         fetch = FetchType.LAZY,
         mappedBy = "user",
