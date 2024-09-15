@@ -1,10 +1,10 @@
-package com.anne.server.domain.diary.dto.request
+package com.anne.server.domain.story.dto.request
 
 import com.anne.server.global.validation.Uuid
 import com.anne.server.global.validation.ValidationGroup
 import jakarta.validation.constraints.NotBlank
 
-data class DiaryGenerateRequestDto (
+data class StoryGenerateRequestDto (
 
     @field:NotBlank(
         message = "UUID는 필수 값 입니다",

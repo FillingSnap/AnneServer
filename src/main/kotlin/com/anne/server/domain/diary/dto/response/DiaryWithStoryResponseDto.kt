@@ -1,7 +1,7 @@
 package com.anne.server.domain.diary.dto.response
 
 import com.anne.server.domain.diary.domain.Diary
-import com.anne.server.domain.story.dto.response.StudySimpleResponseDto
+import com.anne.server.domain.story.dto.response.StorySimpleResponseDto
 import java.time.LocalDateTime
 
 data class DiaryWithStoryResponseDto (
@@ -20,7 +20,7 @@ data class DiaryWithStoryResponseDto (
 
     val updatedAt: LocalDateTime,
 
-    val storyList: List<StudySimpleResponseDto>
+    val storyList: List<StorySimpleResponseDto>
 
 ) {
 
@@ -32,7 +32,7 @@ data class DiaryWithStoryResponseDto (
         diary.user.id!!,
         diary.createdAt,
         diary.updatedAt,
-        diary.storyList.map { StudySimpleResponseDto(it) }
+        diary.storyList.map { StorySimpleResponseDto(it) }
     )
 
 }

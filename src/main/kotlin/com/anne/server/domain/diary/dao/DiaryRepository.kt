@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface DiaryRepository: JpaRepository<Diary, Long> {
 
-    fun findAllByUser(user: User): List<Diary>
-
     fun findAllByUser(user: User, pageable: Pageable): Page<Diary>
 
     fun existsDiaryByUuid(uuid: String): Boolean

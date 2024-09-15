@@ -4,6 +4,7 @@ import com.anne.server.domain.diary.dao.DiaryRepository
 import com.anne.server.domain.diary.domain.Diary
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.user.domain.User
+import com.anne.server.infra.amazon.AwsS3Service
 import com.anne.server.infra.openai.dto.ChatResponseDto
 import com.anne.server.infra.openai.dto.SseResponseDto
 import com.anne.server.infra.openai.dto.SseStatus
@@ -20,8 +21,12 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.io.FileReader
 import java.time.Duration
+import java.util.*
+import javax.imageio.ImageIO
 
 @Service
 class OpenAiService (
@@ -39,9 +44,28 @@ class OpenAiService (
 
     private val storyRepository: StoryRepository,
 
-    private val diaryRepository: DiaryRepository
+    private val diaryRepository: DiaryRepository,
 
-) {
+    private val awsS3Service: AwsS3Service,
+
+    ) {
+
+    fun imageResize(image: String): ByteArray {
+        val inputStream = awsS3Service.getObject(image)
+
+        val sourceImage = ImageIO.read(inputStream)
+        val width = 640
+        val height = 640
+        val resizeImage = BufferedImage(width, height, sourceImage.type)
+        val g = resizeImage.createGraphics()
+        g.drawImage(sourceImage, 0, 0, width, height, null)
+        g.dispose()
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        ImageIO.write(resizeImage, "png", byteArrayOutputStream)
+
+        return byteArrayOutputStream.toByteArray()
+    }
 
     fun request(requestImage: String): String {
         val headers = HttpHeaders()
@@ -85,7 +109,7 @@ class OpenAiService (
         return response.body!!.choices[0].message.content
     }
 
-    fun openAi(uuid: String, imageTextList: List<Pair<String, String>>, delay: Long): Flux<SseResponseDto> {
+    fun openAi(uuid: String, delay: Long): Flux<SseResponseDto> {
         val user = SecurityContextHolder.getContext().authentication.principal as User
         val parser = JSONParser()
         val mbtiReader = FileReader(mbtiJson)
@@ -125,6 +149,12 @@ class OpenAiService (
         userContent += "\b\b], 텍스트: [$text]"
 
         val responseContent = diaryObject["content"] as String
+
+        val storyList = storyRepository.findAllByUuid(uuid)
+
+        val imageTextList = storyList.map {
+            Pair(Base64.getEncoder().encodeToString(imageResize(it.image)), it.text)
+        }
 
         var question = ""
         for (pair in imageTextList) {
@@ -200,14 +230,12 @@ class OpenAiService (
                 }
             }
             .doOnComplete {
-                val storyList = storyRepository.findAllByUuid(uuid)
-
                 val newDiary = diaryRepository.save(
                     Diary(
-                    emotion = "null",
-                    content = result,
-                    user = user,
-                    uuid = uuid
+                        emotion = "null",
+                        content = result,
+                        user = user,
+                        uuid = uuid
                 ))
 
                 storyList.forEach { it.diary = newDiary }

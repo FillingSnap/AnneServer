@@ -1,8 +1,9 @@
 package com.anne.server.domain.story.service
 
+import com.anne.server.domain.story.dto.request.StoryGenerateRequestDto
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.story.domain.Story
-import com.anne.server.domain.story.dto.response.StudySimpleResponseDto
+import com.anne.server.domain.story.dto.response.StorySimpleResponseDto
 import com.anne.server.domain.user.domain.User
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
@@ -22,7 +23,7 @@ class StoryService(
 
 ) {
 
-    fun getStoryById(id: Long): StudySimpleResponseDto {
+    fun getStoryById(id: Long): StorySimpleResponseDto {
         val study = storyRepository.findByIdOrNull(id)
             ?: throw CustomException(ErrorCode.STORY_NOT_FOUND)
 
@@ -33,10 +34,17 @@ class StoryService(
             throw CustomException(ErrorCode.NOT_YOUR_STORY)
         }
 
-        return StudySimpleResponseDto(study)
+        return StorySimpleResponseDto(study)
     }
 
-    fun createStories(imageList: List<MultipartFile>?, textList: List<String>?, uuid: String): List<StudySimpleResponseDto> {
+    fun createStories(imageList: List<MultipartFile>?, request: StoryGenerateRequestDto): List<StorySimpleResponseDto> {
+        val textList = request.textList
+        val uuid = request.uuid!!
+
+        if (storyRepository.existsStoryByUuid(uuid)) {
+            throw CustomException(ErrorCode.ALREADY_EXIST_UUID)
+        }
+
         if (imageList == null || textList == null) {
             throw CustomException(ErrorCode.IMAGE_TEXT_REQUIRED)
         } else if (imageList.size != textList.size) {
@@ -67,7 +75,7 @@ class StoryService(
             storyList.add(story)
         }
 
-        return storyRepository.saveAll(storyList).map { StudySimpleResponseDto(it) }
+        return storyRepository.saveAll(storyList).map { StorySimpleResponseDto(it) }
     }
 
 }
