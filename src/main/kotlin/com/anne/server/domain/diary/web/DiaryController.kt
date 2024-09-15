@@ -1,7 +1,6 @@
 package com.anne.server.domain.diary.web
 
 import com.anne.server.domain.diary.dto.response.DiaryWithStoryResponseDto
-import com.anne.server.domain.diary.dto.request.DiaryGenerateRequestDto
 import com.anne.server.domain.diary.dto.request.DiaryUpdateRequestDto
 import com.anne.server.domain.diary.service.DiaryService
 import com.anne.server.global.validation.ValidationSequence
@@ -16,7 +15,6 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 import reactor.core.publisher.Flux
 
 @RestController
@@ -32,14 +30,12 @@ class DiaryController (
     @Operation(summary = "일기 생성")
     @PostMapping(
         value = ["/generate"],
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
         produces = [MediaType.TEXT_EVENT_STREAM_VALUE]
     ) fun generateDiary(
         @RequestParam delay: Long,
-        @RequestPart(value = "imageList") imageList: List<MultipartFile>?,
-        @RequestPart(value = "requestList") @Validated(value = [ValidationSequence::class]) request: DiaryGenerateRequestDto
+        @RequestBody uuid: String
     ): ResponseEntity<Flux<SseResponseDto>> {
-        return ResponseEntity.ok().body(diaryService.generateDiary(imageList, request, delay))
+        return ResponseEntity.ok().body(diaryService.generateDiary(delay, uuid))
     }
 
     @Operation(summary = "일기 전체 조회")
