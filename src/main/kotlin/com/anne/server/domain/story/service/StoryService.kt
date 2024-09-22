@@ -1,5 +1,6 @@
 package com.anne.server.domain.story.service
 
+import com.anne.server.domain.diary.dao.DiaryRepository
 import com.anne.server.domain.story.dto.request.StoryGenerateRequestDto
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.story.domain.Story
@@ -9,15 +10,19 @@ import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
 import com.anne.server.infra.amazon.AwsS3Service
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
 
 
 @Service
 class StoryService(
 
     private val storyRepository: StoryRepository,
+
+    private val diaryRepository: DiaryRepository,
 
     private val awsS3Service: AwsS3Service,
 
@@ -41,7 +46,7 @@ class StoryService(
         val textList = request.textList
         val uuid = request.uuid!!
 
-        if (storyRepository.existsStoryByUuid(uuid)) {
+        if (diaryRepository.existsDiaryByUuid(uuid)) {
             throw CustomException(ErrorCode.ALREADY_EXIST_UUID)
         }
 
@@ -76,6 +81,17 @@ class StoryService(
         }
 
         return storyRepository.saveAll(storyList).map { StorySimpleResponseDto(it) }
+    }
+
+    @Scheduled(cron = "0 0 6 * * *")
+    fun deleteOldStories() {
+        val weekAgo = LocalDateTime.now().minusDays(7)
+        val oldStories = storyRepository.findAllByUpdatedAtBefore(weekAgo)
+            .filter {
+                it.diary == null
+            }
+
+        storyRepository.deleteAll(oldStories)
     }
 
 }
