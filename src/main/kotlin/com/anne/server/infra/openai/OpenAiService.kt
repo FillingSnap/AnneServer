@@ -1,9 +1,7 @@
 package com.anne.server.infra.openai
 
 import com.anne.server.domain.diary.dao.DiaryRepository
-import com.anne.server.domain.diary.domain.Diary
 import com.anne.server.domain.story.dao.StoryRepository
-import com.anne.server.domain.user.domain.User
 import com.anne.server.infra.amazon.AwsS3Service
 import com.anne.server.infra.openai.dto.ChatResponseDto
 import com.anne.server.infra.openai.dto.SseResponseDto
@@ -16,11 +14,11 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
+import reactor.core.scheduler.Schedulers
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.FileReader
@@ -36,9 +34,6 @@ class OpenAiService (
 
     @Value("\${json.diary}")
     private val diaryJson: String,
-
-    @Value("\${json.mbti}")
-    private val mbtiJson: String,
 
     private val restTemplate: RestTemplate,
 
@@ -110,14 +105,12 @@ class OpenAiService (
     }
 
     fun openAi(uuid: String, delay: Long): Flux<SseResponseDto> {
-        val user = SecurityContextHolder.getContext().authentication.principal as User
         val parser = JSONParser()
-        val mbtiReader = FileReader(mbtiJson)
-        val mbtiObject = parser.parse(mbtiReader) as JSONObject
-
-        val mbti = "INFP"
-        val systemContent = "당신의 MBTI는 ${mbti}이다. ${mbtiObject[mbti]}. 또한 당신은 세상에서 글을 잘 쓰는 작가이다. " +
-                "주어진 분위기와 키워드를 참고하여 일기를 작성하라."
+        val systemContent = "- 키워드와 텍스트에 알맞은 일기를 작성하라.\n" +
+                "- 키워드 순서에 따라 사건이 전개 되도록 작성하라.\n" +
+                "- 일기에는 날짜가 포함되지 않게 작성하라.\n" +
+                "- 예시로 입력된 일기의 말투를 참고하여 작성하라.\n" +
+                "- 200자 내외로 작성하라."
 
         val diaryReader = FileReader(diaryJson)
         val diaryArray = parser.parse(diaryReader) as JSONArray
@@ -136,7 +129,7 @@ class OpenAiService (
             keywordList = keywordList.plus(keywordJSONArray[i].toString())
         }
 
-        val text = diaryObject["text"] as String
+        val text = diaryObject["content"] as String
 
         var userContent = "분위기: ["
         for (atmosphere in atmosphereList) {
@@ -229,14 +222,11 @@ class OpenAiService (
                     )
                 }
             }
+            .publishOn(Schedulers.boundedElastic())
             .doOnComplete {
-                val newDiary = diaryRepository.save(
-                    Diary(
-                        emotion = "null",
-                        content = result,
-                        user = user,
-                        uuid = uuid
-                ))
+                val newDiary = diaryRepository.findByUuid(uuid)
+                newDiary.content = result
+                diaryRepository.save(newDiary)
 
                 storyList.forEach { it.diary = newDiary }
                 storyRepository.saveAll(storyList)
@@ -266,6 +256,7 @@ class OpenAiService (
         val eventStream = Flux.fromIterable(list + "[DONE]")
             .delayElements(Duration.ofMillis(delay))
             .map {
+                println(it)
                 if (it == "[DONE]") {
                     SseResponseDto(
                         status = SseStatus.EOF,
