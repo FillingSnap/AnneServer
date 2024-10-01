@@ -1,6 +1,7 @@
 package com.anne.server.domain.diary.service
 
 import com.anne.server.domain.diary.dao.DiaryRepository
+import com.anne.server.domain.diary.domain.Diary
 import com.anne.server.domain.diary.dto.response.DiaryWithStoryResponseDto
 import com.anne.server.domain.diary.dto.request.DiaryUpdateRequestDto
 import com.anne.server.domain.story.dao.StoryRepository
@@ -46,6 +47,17 @@ class DiaryService(
                 )
             )
         }
+
+        val user = SecurityContextHolder.getContext().authentication.principal as User
+
+        diaryRepository.save(
+            Diary(
+                emotion = "null",
+                content = "null",
+                user = user,
+                uuid = uuid
+            )
+        )
 
         return openAiService.openAi(uuid, delay)
     }
