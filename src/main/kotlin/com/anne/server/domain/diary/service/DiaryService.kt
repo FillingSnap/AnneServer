@@ -69,7 +69,7 @@ class DiaryService(
             DiaryWithStoryResponseDto(it)
         }
 
-        if (page.totalPages <= page.number) {
+        if (page.totalPages != 0 && page.totalPages <= page.number) {
             throw CustomException(ErrorCode.WRONG_PAGE)
         }
 
