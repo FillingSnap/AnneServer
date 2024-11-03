@@ -41,9 +41,9 @@ class OpenAiService (
 
     private val diaryRepository: DiaryRepository,
 
-    private val awsS3Service: AwsS3Service,
+    private val awsS3Service: AwsS3Service
 
-    ) {
+) {
 
     fun imageResize(image: String): ByteArray {
         val inputStream = awsS3Service.getObject(image)
@@ -194,32 +194,32 @@ class OpenAiService (
             .bodyToFlux(String::class.java)
             .delayElements(Duration.ofMillis(delay))
             .map {
-                println(it)
                 if (it == "[DONE]") {
                     SseResponseDto(
                         status = SseStatus.EOF,
                         content = result
                     )
                 } else {
-                    val json = JSONParser().parse(it) as JSONObject
-                    if (json["type"] != null && json["type"] == "server_error") {
+                    try {
+                        val json = JSONParser().parse(it) as JSONObject
+                        val choices = json["choices"] as JSONArray
+                        val content = if (choices[0] != null) {
+                            ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String? ?: ""
+                        } else {
+                            ""
+                        }
+                        result += content
+                        SseResponseDto(
+                            status = SseStatus.SUCCESS,
+                            content = content
+                        )
+                    } catch (e: Exception) {
+                        println(it)
                         SseResponseDto(
                             status = SseStatus.ERROR,
-                            content = (json["error"] as JSONObject)["message"] as String
+                            content = it
                         )
                     }
-
-                    val choices = json["choices"] as JSONArray
-                    val content = if (choices[0] != null) {
-                        ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String? ?: ""
-                    } else {
-                        ""
-                    }
-                    result += content
-                    SseResponseDto(
-                        status = SseStatus.SUCCESS,
-                        content = content
-                    )
                 }
             }
             .publishOn(Schedulers.boundedElastic())
