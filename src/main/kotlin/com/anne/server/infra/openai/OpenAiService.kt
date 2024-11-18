@@ -214,7 +214,6 @@ class OpenAiService (
                             content = content
                         )
                     } catch (e: Exception) {
-                        println(it)
                         SseResponseDto(
                             status = SseStatus.ERROR,
                             content = it
@@ -256,7 +255,6 @@ class OpenAiService (
         val eventStream = Flux.fromIterable(list + "[DONE]")
             .delayElements(Duration.ofMillis(delay))
             .map {
-                println(it)
                 if (it == "[DONE]") {
                     SseResponseDto(
                         status = SseStatus.EOF,

@@ -26,7 +26,7 @@ class SecurityConfig (
             it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
         .authorizeHttpRequests {
-            it.requestMatchers("/ws", "/diary/test", "/user/token/refresh", "/error", "/login/oauth2/**",
+            it.requestMatchers("/ws", "/diary/test", "/user/token/refresh", "/error", "/login/oauth2/**", "/login/fedCM/**",
                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
         }
