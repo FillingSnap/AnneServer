@@ -1,11 +1,8 @@
 package com.anne.server.global.auth.oauth
 
+import com.anne.server.domain.user.dto.UserPayloadDto
+import com.anne.server.global.auth.AuthServiceInterface
 import com.fasterxml.jackson.databind.JsonNode
-import com.anne.server.domain.user.dao.UserRepository
-import com.anne.server.domain.user.domain.User
-import com.anne.server.domain.user.dto.response.UserLoginResponseDto
-import com.anne.server.domain.user.dto.response.UserSimpleResponseDto
-import com.anne.server.global.auth.jwt.JwtAuthenticationService
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -18,36 +15,15 @@ import org.springframework.web.client.RestTemplate
 @Service
 class OAuthService (
 
-    private val env: Environment,
+    private val env: Environment
 
-    private val userRepository: UserRepository,
+): AuthServiceInterface {
 
-    private val tokenService: JwtAuthenticationService
-
-) {
-
-    fun login(code: String, registrationId: String): UserLoginResponseDto {
+    override fun getPayload(code: String, registrationId: String): UserPayloadDto {
         val accessToken = getAccessToken(code, registrationId)
         val userResourceNode = getUserResource(accessToken, registrationId)!!
-        val uid = userResourceNode.get("id").asText()
-        val nickname = userResourceNode.get("name").asText()
 
-        var user = userRepository.findByUidAndProvider(uid, registrationId)
-        if (user == null) {
-           user = userRepository.save(
-               User(
-                   name = nickname,
-                   uid = uid,
-                   provider = registrationId
-               )
-           )
-        }
-
-        return UserLoginResponseDto(
-            UserSimpleResponseDto(user),
-            tokenService.generateAccessToken(user.id!!.toString(), user.provider, user.uid),
-            tokenService.generateRefreshToken(user.id!!.toString())
-        )
+        return UserPayloadDto(userResourceNode.get("id").asText(), userResourceNode.get("name").asText())
     }
 
     fun getAccessToken(code: String, registrationId: String): String {
