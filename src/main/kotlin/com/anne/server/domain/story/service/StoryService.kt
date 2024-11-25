@@ -13,6 +13,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDateTime
 
@@ -28,6 +29,7 @@ class StoryService(
 
 ) {
 
+    @Transactional(readOnly = true)
     fun getStoryById(id: Long): StorySimpleResponseDto {
         val study = storyRepository.findByIdOrNull(id)
             ?: throw CustomException(ErrorCode.STORY_NOT_FOUND)
@@ -42,6 +44,7 @@ class StoryService(
         return StorySimpleResponseDto(study)
     }
 
+    @Transactional
     fun createStories(imageList: List<MultipartFile>?, request: StoryGenerateRequestDto): List<StorySimpleResponseDto> {
         val textList = request.textList
         val uuid = request.uuid!!
