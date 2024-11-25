@@ -47,18 +47,18 @@ class DiaryController (
     }
 
     @Operation(summary = "일기 단일 조회")
-    @GetMapping("/{id}")
-    fun getDiaryList(@PathVariable("id") id: Long): ResponseEntity<DiaryWithStoryResponseDto> {
-        return ResponseEntity.ok().body(diaryService.getDiaryById(id))
+    @GetMapping("/{uuid}")
+    fun getDiaryList(@PathVariable("uuid") uuid: String): ResponseEntity<DiaryWithStoryResponseDto> {
+        return ResponseEntity.ok().body(diaryService.getDiaryByUuid(uuid))
     }
 
     @Operation(summary = "일기 수정")
-    @PutMapping("/update/{id}")
+    @PutMapping("/update/{uuid}")
     fun updateDiary(
-        @PathVariable("id") id: Long,
+        @PathVariable("uuid") uuid: String,
         @RequestBody @Validated(value = [ValidationSequence::class]) request: DiaryUpdateRequestDto
     ): ResponseEntity<DiaryWithStoryResponseDto> {
-        return ResponseEntity.ok().body(diaryService.updateDiary(id, request))
+        return ResponseEntity.ok().body(diaryService.updateDiary(uuid, request))
     }
 
     @Operation(summary = "SSE 테스트")

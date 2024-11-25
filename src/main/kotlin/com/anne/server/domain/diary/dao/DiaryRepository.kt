@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface DiaryRepository: JpaRepository<Diary, Long> {
 
-    fun findByUuid(uuid: String): Diary
+    fun findByUuid(uuid: String): Diary?
 
     fun findAllByUser(user: User, pageable: Pageable): Page<Diary>
 

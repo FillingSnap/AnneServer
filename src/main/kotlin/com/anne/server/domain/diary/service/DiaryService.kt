@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 
 @Service
@@ -29,6 +30,7 @@ class DiaryService(
 
 ) {
 
+    @Transactional
     fun generateDiary(delay: Long, uuid: String): Flux<SseResponseDto> {
         if (diaryRepository.existsDiaryByUuid(uuid)) {
             return Flux.just(
@@ -62,6 +64,7 @@ class DiaryService(
         return openAiService.openAi(uuid, delay)
     }
 
+    @Transactional(readOnly = true)
     fun getDiaryList(pageable: Pageable): Page<DiaryWithStoryResponseDto> {
         val user = SecurityContextHolder.getContext().authentication.principal as User
 
@@ -76,8 +79,9 @@ class DiaryService(
         return page
     }
 
-    fun getDiaryById(id: Long): DiaryWithStoryResponseDto {
-        val diary = diaryRepository.findByIdOrNull(id)
+    @Transactional(readOnly = true)
+    fun getDiaryByUuid(uuid: String): DiaryWithStoryResponseDto {
+        val diary = diaryRepository.findByUuid(uuid)
             ?: throw CustomException(ErrorCode.DIARY_NOT_FOUND)
 
         val user = SecurityContextHolder.getContext().authentication.principal as User
@@ -90,10 +94,11 @@ class DiaryService(
         return DiaryWithStoryResponseDto(diary)
     }
 
-    fun updateDiary(id: Long, request: DiaryUpdateRequestDto): DiaryWithStoryResponseDto {
+    @Transactional
+    fun updateDiary(uuid: String, request: DiaryUpdateRequestDto): DiaryWithStoryResponseDto {
         val user = SecurityContextHolder.getContext().authentication.principal as User
 
-        val diary = diaryRepository.findByIdOrNull(id)
+        val diary = diaryRepository.findByUuid(uuid)
             ?: throw CustomException(ErrorCode.DIARY_NOT_FOUND)
 
         // 해당 일기의 소유자가 아닌 경우

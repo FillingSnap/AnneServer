@@ -2,6 +2,8 @@ package com.anne.server.infra.openai
 
 import com.anne.server.domain.diary.dao.DiaryRepository
 import com.anne.server.domain.story.dao.StoryRepository
+import com.anne.server.global.exception.CustomException
+import com.anne.server.global.exception.ErrorCode
 import com.anne.server.infra.amazon.AwsS3Service
 import com.anne.server.infra.openai.dto.ChatResponseDto
 import com.anne.server.infra.openai.dto.SseResponseDto
@@ -224,6 +226,7 @@ class OpenAiService (
             .publishOn(Schedulers.boundedElastic())
             .doOnComplete {
                 val newDiary = diaryRepository.findByUuid(uuid)
+                    ?: throw CustomException(ErrorCode.DIARY_NOT_FOUND)
                 newDiary.content = result
                 diaryRepository.save(newDiary)
 
