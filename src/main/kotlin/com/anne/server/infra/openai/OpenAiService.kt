@@ -12,11 +12,10 @@ import org.json.simple.JSONArray
 import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
-import org.springframework.http.MediaType
+import org.springframework.http.*
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestClient
+import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
@@ -102,10 +101,14 @@ class OpenAiService (
             entity,
             ChatResponseDto::class.java
         )
+        if (response.statusCode != HttpStatus.OK) {
+            throw CustomException(ErrorCode.CHAT_GPT_IMAGE_ANALYZE_FAILED)
+        }
 
         return response.body!!.choices[0].message.content
     }
 
+    // todo: 수정 필요
     fun openAi(uuid: String, delay: Long): Flux<SseResponseDto> {
         val parser = JSONParser()
         val systemContent = "- 키워드와 텍스트에 알맞은 일기를 작성하라.\n" +
