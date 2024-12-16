@@ -13,7 +13,6 @@ import com.anne.server.infra.openai.dto.SseResponseDto
 import com.anne.server.infra.openai.dto.SseStatus
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,6 +29,7 @@ class DiaryService(
 
 ) {
 
+    // 수정 필요
     @Transactional
     fun generateDiary(delay: Long, uuid: String): Flux<SseResponseDto> {
         if (diaryRepository.existsDiaryByUuid(uuid)) {
