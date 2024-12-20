@@ -4,9 +4,9 @@ import com.anne.server.domain.diary.dao.DiaryRepository
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
-import com.anne.server.infra.amazon.AwsS3Service
-import com.anne.server.infra.openai.dto.ChatResponseDto
-import com.anne.server.infra.openai.dto.SseResponseDto
+import com.anne.server.infra.amazon.service.S3Service
+import com.anne.server.infra.openai.dto.ChatResponse
+import com.anne.server.infra.openai.dto.SseResponse
 import com.anne.server.infra.openai.dto.SseStatus
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
@@ -14,8 +14,6 @@ import org.json.simple.parser.JSONParser
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.*
 import org.springframework.stereotype.Service
-import org.springframework.web.client.RestClient
-import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
@@ -42,12 +40,12 @@ class OpenAiService (
 
     private val diaryRepository: DiaryRepository,
 
-    private val awsS3Service: AwsS3Service
+    private val s3Service: S3Service
 
 ) {
 
     fun imageResize(image: String): ByteArray {
-        val inputStream = awsS3Service.getObject(image)
+        val inputStream = s3Service.getObject(image)
 
         val sourceImage = ImageIO.read(inputStream)
         val width = 640
@@ -99,7 +97,7 @@ class OpenAiService (
             "https://api.openai.com/v1/chat/completions",
             HttpMethod.POST,
             entity,
-            ChatResponseDto::class.java
+            ChatResponse::class.java
         )
         if (response.statusCode != HttpStatus.OK) {
             throw CustomException(ErrorCode.CHAT_GPT_IMAGE_ANALYZE_FAILED)
@@ -109,7 +107,7 @@ class OpenAiService (
     }
 
     // todo: 수정 필요
-    fun openAi(uuid: String, delay: Long): Flux<SseResponseDto> {
+    fun openAi(uuid: String, delay: Long): Flux<SseResponse> {
         val parser = JSONParser()
         val systemContent = "- 키워드와 텍스트에 알맞은 일기를 작성하라.\n" +
                 "- 키워드 순서에 따라 사건이 전개 되도록 작성하라.\n" +
@@ -200,7 +198,7 @@ class OpenAiService (
             .delayElements(Duration.ofMillis(delay))
             .map {
                 if (it == "[DONE]") {
-                    SseResponseDto(
+                    SseResponse(
                         status = SseStatus.EOF,
                         content = result
                     )
@@ -214,12 +212,12 @@ class OpenAiService (
                             ""
                         }
                         result += content
-                        SseResponseDto(
+                        SseResponse(
                             status = SseStatus.SUCCESS,
                             content = content
                         )
                     } catch (e: Exception) {
-                        SseResponseDto(
+                        SseResponse(
                             status = SseStatus.ERROR,
                             content = it
                         )
@@ -236,7 +234,7 @@ class OpenAiService (
                 storyList.forEach { it.diary = newDiary }
                 storyRepository.saveAll(storyList)
             }.doOnError {
-                SseResponseDto(
+                SseResponse(
                     status = SseStatus.ERROR,
                     content = it.message
                 )
@@ -245,7 +243,7 @@ class OpenAiService (
         return eventStream
     }
 
-    fun test(delay: Long): Flux<SseResponseDto> {
+    fun test(delay: Long): Flux<SseResponse> {
         val result = "식사를 준비하며 스테이크와 야채를 손질하는 것은 항상 맛있는 시간이다. 스테이크를구워내는 소리와 야채가 향기로 " +
                 "가득한 주방에서의 시간은 언제나 아름다운 순간이다. 나무 도마 위에서 재료들을 다듬고 음식을 만들어내는 과정은 맛있는 " +
                 "요리를 만들어냄으로써 즐거움을 더해준다. 이런 소중한 시간을 보내며, 맛있는 음식을 먹을 때의 만족감은 무엇과도 바꿀 수 " +
@@ -262,18 +260,18 @@ class OpenAiService (
             .delayElements(Duration.ofMillis(delay))
             .map {
                 if (it == "[DONE]") {
-                    SseResponseDto(
+                    SseResponse(
                         status = SseStatus.EOF,
                         content = result
                     )
                 } else {
-                    SseResponseDto(
+                    SseResponse(
                         status = SseStatus.SUCCESS,
                         content = it ?: ""
                     )
                 }
             }.doOnError {
-                SseResponseDto(
+                SseResponse(
                     status = SseStatus.ERROR,
                     content = it.message
                 )

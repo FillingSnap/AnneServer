@@ -1,6 +1,6 @@
 package com.anne.server.domain.user.dto
 
-data class UserPayloadDto (
+data class Payload (
 
     val uid: String,
 

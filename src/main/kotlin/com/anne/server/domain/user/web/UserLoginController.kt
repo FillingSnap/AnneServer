@@ -1,6 +1,6 @@
 package com.anne.server.domain.user.web
 
-import com.anne.server.domain.user.dto.response.UserLoginResponseDto
+import com.anne.server.domain.user.dto.response.LoginResponse
 import com.anne.server.domain.user.enums.LoginType
 import com.anne.server.domain.user.service.UserLoginService
 import io.swagger.v3.oas.annotations.Operation
@@ -32,7 +32,7 @@ class UserLoginController (
     fun getToken(
         @RequestParam code: String,
         @PathVariable("registrationId") registrationId: String
-    ): ResponseEntity<UserLoginResponseDto> {
+    ): ResponseEntity<LoginResponse> {
         return ResponseEntity.ok(userLoginService.login(code, registrationId, LoginType.OAUTH))
     }
 
@@ -41,7 +41,7 @@ class UserLoginController (
     fun login(
         @RequestParam idToken: String,
         @PathVariable("registrationId") registrationId: String
-    ): ResponseEntity<UserLoginResponseDto> {
+    ): ResponseEntity<LoginResponse> {
         return ResponseEntity.ok(userLoginService.login(idToken, registrationId, LoginType.FEDCM))
     }
 

@@ -1,6 +1,6 @@
 package com.anne.server.infra.openai.dto
 
-data class SseResponseDto (
+data class SseResponse (
 
     val status: SseStatus,
 

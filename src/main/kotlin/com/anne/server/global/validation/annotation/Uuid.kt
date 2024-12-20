@@ -1,5 +1,6 @@
-package com.anne.server.global.validation
+package com.anne.server.global.validation.annotation
 
+import com.anne.server.global.validation.validator.UuidValidator
 import jakarta.validation.Constraint
 import jakarta.validation.Payload
 import kotlin.reflect.KClass

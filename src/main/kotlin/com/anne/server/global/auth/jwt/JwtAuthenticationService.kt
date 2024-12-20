@@ -1,15 +1,14 @@
 package com.anne.server.global.auth.jwt
 
-import com.anne.server.domain.user.dto.response.TokenResponseDto
+import com.anne.server.domain.user.dto.response.TokenResponse
 import com.anne.server.domain.user.service.UserService
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
-import com.anne.server.infra.redis.RedisDao
+import com.anne.server.infra.redis.dao.RedisRepository
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import jakarta.annotation.PostConstruct
-import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.stereotype.Service
@@ -30,7 +29,7 @@ class JwtAuthenticationService (
 
     private val userService: UserService,
 
-    private val redisDao: RedisDao
+    private val redisRepository: RedisRepository
 
 ) {
 
@@ -54,18 +53,18 @@ class JwtAuthenticationService (
             .build()
 
         val refresh = generateToken(refreshPeriod, refreshClaims)
-        redisDao.setValues(id, refresh, Duration.ofMillis(refreshPeriod))
+        redisRepository.setValues(id, refresh, Duration.ofMillis(refreshPeriod))
         return refresh
     }
 
-    fun refreshToken(refreshToken: String): TokenResponseDto {
+    fun refreshToken(refreshToken: String): TokenResponse {
         val split = refreshToken.split(" ")
         if (split.size != 2 || split[0] != "Bearer") {
             throw CustomException(ErrorCode.INVALID_TOKEN)
         }
 
         val id = getId(split[1])
-        if (split[1] != redisDao.getValues(id)) {
+        if (split[1] != redisRepository.getValues(id)) {
             throw CustomException(ErrorCode.INVALID_TOKEN)
         }
 
@@ -75,7 +74,7 @@ class JwtAuthenticationService (
             .add(mapOf(Pair("provider", user.provider), Pair("uid", user.uid)))
             .build()
 
-        return TokenResponseDto(generateToken(tokenPeriod, claims))
+        return TokenResponse(generateToken(tokenPeriod, claims))
     }
 
     fun generateToken(period: Long, claims: Claims): String {

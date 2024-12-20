@@ -1,4 +1,4 @@
-package com.anne.server.infra.redis
+package com.anne.server.infra.redis.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

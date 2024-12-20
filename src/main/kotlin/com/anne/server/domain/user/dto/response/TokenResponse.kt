@@ -1,6 +1,6 @@
 package com.anne.server.domain.user.dto.response
 
-data class TokenResponseDto (
+data class TokenResponse (
 
     val token: String
 

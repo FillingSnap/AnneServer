@@ -2,8 +2,8 @@ package com.anne.server.domain.user.service
 
 import com.anne.server.domain.user.dao.UserRepository
 import com.anne.server.domain.user.domain.User
-import com.anne.server.domain.user.dto.response.UserLoginResponseDto
-import com.anne.server.domain.user.dto.response.UserSimpleResponseDto
+import com.anne.server.domain.user.dto.response.LoginResponse
+import com.anne.server.domain.user.dto.response.UserResponse
 import com.anne.server.domain.user.enums.LoginType
 import com.anne.server.global.auth.fedCM.FedCMService
 import com.anne.server.global.auth.jwt.JwtAuthenticationService
@@ -23,7 +23,7 @@ class UserLoginService (
 
 ) {
 
-    fun login(code: String, registrationId: String, type: LoginType): UserLoginResponseDto {
+    fun login(code: String, registrationId: String, type: LoginType): LoginResponse {
         val payload = when (type) {
             LoginType.OAUTH -> oAuthService.getPayload(code, registrationId)
             LoginType.FEDCM -> fedCMService.getPayload(code, registrationId)
@@ -43,8 +43,8 @@ class UserLoginService (
             )
         }
 
-        return UserLoginResponseDto(
-            UserSimpleResponseDto(user),
+        return LoginResponse(
+            UserResponse(user),
             jwtAuthenticationService.generateAccessToken(user.id!!.toString(), user.provider, user.uid),
             jwtAuthenticationService.generateRefreshToken(user.id!!.toString())
         )

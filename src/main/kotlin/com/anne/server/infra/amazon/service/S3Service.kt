@@ -1,4 +1,4 @@
-package com.anne.server.infra.amazon
+package com.anne.server.infra.amazon.service
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.DeleteObjectRequest
@@ -16,7 +16,7 @@ import java.net.URLDecoder
 import java.time.LocalDateTime
 
 @Service
-class AwsS3Service (
+class S3Service (
 
     private val s3: AmazonS3,
 

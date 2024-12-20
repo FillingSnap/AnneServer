@@ -3,7 +3,7 @@ package com.anne.server.domain.story.dto.response
 import com.anne.server.domain.story.domain.Story
 import java.time.LocalDateTime
 
-data class StorySimpleResponseDto (
+data class StoryResponse (
 
     val id: Long?,
 

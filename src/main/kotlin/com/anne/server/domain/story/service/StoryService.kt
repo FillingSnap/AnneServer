@@ -1,14 +1,14 @@
 package com.anne.server.domain.story.service
 
 import com.anne.server.domain.diary.dao.DiaryRepository
-import com.anne.server.domain.story.dto.request.StoryGenerateRequestDto
+import com.anne.server.domain.story.dto.request.GenerateRequest
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.story.domain.Story
-import com.anne.server.domain.story.dto.response.StorySimpleResponseDto
+import com.anne.server.domain.story.dto.response.StoryResponse
 import com.anne.server.domain.user.domain.User
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
-import com.anne.server.infra.amazon.AwsS3Service
+import com.anne.server.infra.amazon.service.S3Service
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.core.context.SecurityContextHolder
@@ -25,12 +25,12 @@ class StoryService(
 
     private val diaryRepository: DiaryRepository,
 
-    private val awsS3Service: AwsS3Service,
+    private val s3Service: S3Service,
 
-) {
+    ) {
 
     @Transactional(readOnly = true)
-    fun getStoryById(id: Long): StorySimpleResponseDto {
+    fun getStoryById(id: Long): StoryResponse {
         val study = storyRepository.findByIdOrNull(id)
             ?: throw CustomException(ErrorCode.STORY_NOT_FOUND)
 
@@ -41,11 +41,11 @@ class StoryService(
             throw CustomException(ErrorCode.NOT_YOUR_STORY)
         }
 
-        return StorySimpleResponseDto(study)
+        return StoryResponse(study)
     }
 
     @Transactional
-    fun createStories(imageList: List<MultipartFile>?, request: StoryGenerateRequestDto): List<StorySimpleResponseDto> {
+    fun createStories(imageList: List<MultipartFile>?, request: GenerateRequest): List<StoryResponse> {
         val textList = request.textList
         val uuid = request.uuid!!
 
@@ -66,10 +66,10 @@ class StoryService(
 
         for (i in imageList.indices) {
             val image: String = try {
-                awsS3Service.uploadObject(imageList[i])
+                s3Service.uploadObject(imageList[i])
             } catch (e: Exception) {
                 for (image in savedImageList) {
-                    awsS3Service.deleteObject(image)
+                    s3Service.deleteObject(image)
                 }
                 throw CustomException(ErrorCode.IMAGE_SAVE_ERROR)
             }
@@ -83,7 +83,7 @@ class StoryService(
             storyList.add(story)
         }
 
-        return storyRepository.saveAll(storyList).map { StorySimpleResponseDto(it) }
+        return storyRepository.saveAll(storyList).map { StoryResponse(it) }
     }
 
     @Scheduled(cron = "0 0 6 * * *")

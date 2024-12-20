@@ -1,10 +1,10 @@
 package com.anne.server.infra.openai.dto
 
-class ChatChoiceDto (
+class ChatChoice (
 
     val index: Int,
 
-    val message: ChatMessageDto
+    val message: ChatMessage
 
 ) {
 }

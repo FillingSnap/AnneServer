@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.anne.server.global.exception.ErrorCode
-import com.anne.server.global.exception.dto.ExceptionResponseDto
+import com.anne.server.global.exception.dto.ExceptionResponse
 import com.anne.server.logger
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -35,7 +35,7 @@ class JwtAuthenticationEntryPoint: AuthenticationEntryPoint {
         response.contentType = MediaType.APPLICATION_JSON_VALUE
         response.characterEncoding = "utf-8"
         response.writer.write(objectMapper.writeValueAsString(
-            ExceptionResponseDto(
+            ExceptionResponse(
                 status = error.status,
                 requestUri = request.requestURI,
                 data = error.message,

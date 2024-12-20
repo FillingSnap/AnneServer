@@ -1,8 +1,8 @@
 package com.anne.server.domain.user.dto.response
 
-data class UserLoginResponseDto (
+data class LoginResponse (
 
-    val user: UserSimpleResponseDto,
+    val user: UserResponse,
 
     val accessToken: String,
 

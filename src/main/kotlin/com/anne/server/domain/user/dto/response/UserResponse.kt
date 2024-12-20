@@ -3,7 +3,7 @@ package com.anne.server.domain.user.dto.response
 import com.anne.server.domain.user.domain.User
 import java.time.LocalDateTime
 
-data class UserSimpleResponseDto (
+data class UserResponse (
 
     val id: Long,
 

@@ -1,7 +1,7 @@
 package com.anne.server.domain.story.web
 
-import com.anne.server.domain.story.dto.request.StoryGenerateRequestDto
-import com.anne.server.domain.story.dto.response.StorySimpleResponseDto
+import com.anne.server.domain.story.dto.request.GenerateRequest
+import com.anne.server.domain.story.dto.response.StoryResponse
 import com.anne.server.domain.story.service.StoryService
 import com.anne.server.global.validation.ValidationSequence
 import io.swagger.v3.oas.annotations.Operation
@@ -21,7 +21,7 @@ class StoryController (
 
     @Operation(summary = "스토리 단일 조회")
     @GetMapping("/{id}")
-    fun getStoryById(@PathVariable id: Long): ResponseEntity<StorySimpleResponseDto> {
+    fun getStoryById(@PathVariable id: Long): ResponseEntity<StoryResponse> {
         return ResponseEntity.ok().body(storyService.getStoryById(id))
     }
 
@@ -31,8 +31,8 @@ class StoryController (
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     ) fun generateDiary(
         @RequestPart(value = "imageList") imageList: List<MultipartFile>?,
-        @RequestPart(value = "requestList") @Validated(value = [ValidationSequence::class]) request: StoryGenerateRequestDto
-    ): ResponseEntity<List<StorySimpleResponseDto>> {
+        @RequestPart(value = "requestList") @Validated(value = [ValidationSequence::class]) request: GenerateRequest
+    ): ResponseEntity<List<StoryResponse>> {
         return ResponseEntity.ok().body(storyService.createStories(imageList, request))
     }
 

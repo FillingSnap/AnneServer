@@ -1,4 +1,4 @@
-package com.anne.server.infra.amazon
+package com.anne.server.infra.amazon.config
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class AwsS3Config (
+class S3Config (
 
     @Value("\${cloud.aws.credentials.access-key}")
     private val accessKey: String,
