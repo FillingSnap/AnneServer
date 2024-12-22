@@ -33,7 +33,6 @@ class GenerateService (
 
 ) {
 
-    // 수정 필요
     @Transactional
     fun generateDiary(delay: Long, uuid: String): Flux<SseResponse> {
         if (diaryRepository.existsDiaryByUuid(uuid)) {
@@ -89,22 +88,23 @@ class GenerateService (
             }}
             .publishOn(Schedulers.boundedElastic())
             .doOnComplete {
-            val newDiary = diaryRepository.save(
-                Diary(
-                    emotion = "null",
-                    content = result,
-                    user = UserDto.toEntity(userDto),
-                    uuid = uuid
+                val newDiary = diaryRepository.save(
+                    Diary(
+                        emotion = "null",
+                        content = result,
+                        user = UserDto.toEntity(userDto),
+                        uuid = uuid
+                    )
                 )
-            )
 
-            storyService.updateDiaryByUuid(DiaryDto.fromEntity(newDiary))
-        }.doOnError {
-            SseResponse(
-                status = SseStatus.ERROR,
-                content = it.message
-            )
-        }
+                storyService.updateDiaryByUuid(DiaryDto.fromEntity(newDiary))
+            }
+            .doOnError {
+                SseResponse(
+                    status = SseStatus.ERROR,
+                    content = it.message
+                )
+            }
     }
 
     fun test(delay: Long): Flux<SseResponse> {
