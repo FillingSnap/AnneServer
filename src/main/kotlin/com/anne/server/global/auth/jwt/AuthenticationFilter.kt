@@ -7,9 +7,9 @@ import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.GenericFilterBean
 
-class JwtAuthenticationFilter(
+class AuthenticationFilter(
 
-    private val jwtAuthenticationService: JwtAuthenticationService
+    private val authenticationService: AuthenticationService
 
 ): GenericFilterBean() {
 
@@ -18,8 +18,8 @@ class JwtAuthenticationFilter(
 
         if (token != null) {
             val split = token.split(" ")
-            if (split.size == 2 && split[0] == "Bearer" && jwtAuthenticationService.verifyToken(split[1])) {
-                val auth = jwtAuthenticationService.getAuthentication(split[1])
+            if (split.size == 2 && split[0] == "Bearer" && authenticationService.verifyToken(split[1])) {
+                val auth = authenticationService.getAuthentication(split[1])
                 SecurityContextHolder.getContext().authentication = auth
             }
         }

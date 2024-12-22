@@ -4,8 +4,8 @@ import com.anne.server.domain.diary.dto.response.DiaryResponse
 import com.anne.server.domain.diary.dto.request.UpdateRequest
 import com.anne.server.domain.diary.service.DiaryService
 import com.anne.server.global.validation.ValidationSequence
-import com.anne.server.infra.openai.OpenAiService
-import com.anne.server.infra.openai.dto.SseResponse
+import com.anne.server.domain.diary.dto.response.SseResponse
+import com.anne.server.domain.diary.service.GenerateService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -23,7 +23,7 @@ class DiaryController (
 
     private val diaryService: DiaryService,
 
-    private val openAiService: OpenAiService
+    private val generateService: GenerateService
 
 ) {
 
@@ -35,7 +35,7 @@ class DiaryController (
         @RequestParam delay: Long,
         @RequestBody uuid: String
     ): ResponseEntity<Flux<SseResponse>> {
-        return ResponseEntity.ok().body(diaryService.generateDiary(delay, uuid))
+        return ResponseEntity.ok().body(generateService.generateDiary(delay, uuid))
     }
 
     @Operation(summary = "일기 전체 조회")
@@ -64,7 +64,7 @@ class DiaryController (
     @Operation(summary = "SSE 테스트")
     @GetMapping("/test", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun test(@RequestParam delay: Long): Flux<SseResponse> {
-        return openAiService.test(delay)
+        return generateService.test(delay)
     }
 
 }

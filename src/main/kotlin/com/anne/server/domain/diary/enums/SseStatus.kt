@@ -1,4 +1,4 @@
-package com.anne.server.infra.openai.dto
+package com.anne.server.domain.diary.enums
 
 enum class SseStatus (
 

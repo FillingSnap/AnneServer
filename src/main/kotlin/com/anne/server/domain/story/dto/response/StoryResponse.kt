@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class StoryResponse (
 
-    val id: Long?,
+    val id: Long,
 
     val text: String,
 
@@ -20,7 +20,7 @@ data class StoryResponse (
 ) {
 
     constructor(story: Story) : this(
-        story.id,
+        story.id!!,
         story.text,
         story.image,
         story.uuid,

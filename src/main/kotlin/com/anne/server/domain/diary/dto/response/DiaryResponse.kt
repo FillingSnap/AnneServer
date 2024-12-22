@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 data class DiaryResponse (
 
-    val id: Long?,
+    val id: Long,
 
     val emotion: String,
 
@@ -25,7 +25,7 @@ data class DiaryResponse (
 ) {
 
     constructor(diary: Diary): this(
-        diary.id,
+        diary.id!!,
         diary.emotion,
         diary.content,
         diary.uuid,

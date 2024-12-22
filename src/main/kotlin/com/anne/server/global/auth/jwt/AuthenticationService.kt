@@ -16,7 +16,7 @@ import java.time.Duration
 import java.util.*
 
 @Service
-class JwtAuthenticationService (
+class AuthenticationService (
 
     @Value("\${jwt.secret}")
     private var secretKey: String,

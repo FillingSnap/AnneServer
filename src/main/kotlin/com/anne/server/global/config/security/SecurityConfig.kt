@@ -1,8 +1,8 @@
 package com.anne.server.global.config.security
 
-import com.anne.server.global.auth.jwt.JwtAuthenticationEntryPoint
-import com.anne.server.global.auth.jwt.JwtAuthenticationFilter
-import com.anne.server.global.auth.jwt.JwtAuthenticationService
+import com.anne.server.global.auth.jwt.AuthenticationEntryPoint
+import com.anne.server.global.auth.jwt.AuthenticationFilter
+import com.anne.server.global.auth.jwt.AuthenticationService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -13,7 +13,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 class SecurityConfig (
 
-    private val jwtAuthenticationService: JwtAuthenticationService
+    private val authenticationService: AuthenticationService,
+
+    private val authenticationEntryPoint: AuthenticationEntryPoint
 
 ) {
 
@@ -30,9 +32,9 @@ class SecurityConfig (
                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
         }
-        .addFilterBefore(JwtAuthenticationFilter(jwtAuthenticationService), UsernamePasswordAuthenticationFilter::class.java)
+        .addFilterBefore(AuthenticationFilter(authenticationService), UsernamePasswordAuthenticationFilter::class.java)
         .exceptionHandling {
-            it.authenticationEntryPoint(JwtAuthenticationEntryPoint())
+            it.authenticationEntryPoint(authenticationEntryPoint)
         }
         .build()!!
 

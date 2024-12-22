@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest
 import com.amazonaws.services.s3.model.GetObjectRequest
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.anne.server.domain.user.domain.User
+import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
 import org.springframework.beans.factory.annotation.Value
@@ -38,11 +39,11 @@ class S3Service (
     }
 
     fun uploadObject(file: MultipartFile): String {
-        val user = SecurityContextHolder.getContext().authentication.principal as User
+        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
 
         val originalFileName = file.originalFilename!!
         val ext = originalFileName.substring(originalFileName.lastIndexOf(".") + 1)
-        val fileName = user.id!!.toString() + "/" + LocalDateTime.now().toString() + "." + ext
+        val fileName = UserDto.toEntity(userDto).id!!.toString() + "/" + LocalDateTime.now().toString() + "." + ext
         val metadata = ObjectMetadata()
         metadata.contentLength = file.size
         metadata.contentType = file.contentType

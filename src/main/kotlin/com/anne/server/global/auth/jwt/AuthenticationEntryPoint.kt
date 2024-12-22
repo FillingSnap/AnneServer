@@ -1,8 +1,6 @@
 package com.anne.server.global.auth.jwt
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.anne.server.global.exception.ErrorCode
 import com.anne.server.global.exception.dto.ExceptionResponse
 import com.anne.server.logger
@@ -14,7 +12,11 @@ import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.stereotype.Component
 
 @Component
-class JwtAuthenticationEntryPoint: AuthenticationEntryPoint {
+class AuthenticationEntryPoint (
+
+    private val objectMapper: ObjectMapper,
+
+): AuthenticationEntryPoint {
 
     val log = logger()
 
@@ -23,10 +25,6 @@ class JwtAuthenticationEntryPoint: AuthenticationEntryPoint {
         response: HttpServletResponse,
         authException: AuthenticationException,
     ) {
-        val objectMapper = ObjectMapper()
-        objectMapper.registerModule(JavaTimeModule())
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-
         val error = ErrorCode.INVALID_TOKEN
 
         log.error("{} ({})", ErrorCode.INVALID_TOKEN.message, request.getHeader("Authorization"), )

@@ -13,10 +13,8 @@ abstract class BaseTimeEntity {
 
     @CreatedDate
     var createdAt: LocalDateTime = LocalDateTime.now()
-        protected set
 
     @LastModifiedDate
     var updatedAt: LocalDateTime = LocalDateTime.now()
-        protected set
 
 }

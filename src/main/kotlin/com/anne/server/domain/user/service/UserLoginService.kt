@@ -2,11 +2,11 @@ package com.anne.server.domain.user.service
 
 import com.anne.server.domain.user.dao.UserRepository
 import com.anne.server.domain.user.domain.User
+import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.domain.user.dto.response.LoginResponse
-import com.anne.server.domain.user.dto.response.UserResponse
 import com.anne.server.domain.user.enums.LoginType
 import com.anne.server.global.auth.fedCM.FedCMService
-import com.anne.server.global.auth.jwt.JwtAuthenticationService
+import com.anne.server.global.auth.jwt.AuthenticationService
 import com.anne.server.global.auth.oauth.OAuthService
 import org.springframework.stereotype.Service
 
@@ -19,7 +19,7 @@ class UserLoginService (
 
     private val userRepository: UserRepository,
 
-    private val jwtAuthenticationService: JwtAuthenticationService
+    private val authenticationService: AuthenticationService
 
 ) {
 
@@ -44,9 +44,9 @@ class UserLoginService (
         }
 
         return LoginResponse(
-            UserResponse(user),
-            jwtAuthenticationService.generateAccessToken(user.id!!.toString(), user.provider, user.uid),
-            jwtAuthenticationService.generateRefreshToken(user.id!!.toString())
+            UserDto.fromEntity(user),
+            authenticationService.generateAccessToken(user.id!!.toString(), user.provider, user.uid),
+            authenticationService.generateRefreshToken(user.id!!.toString())
         )
     }
 

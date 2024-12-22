@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
-class ExceptionHandler {
+class GlobalExceptionHandler {
 
     val log = logger()
 
