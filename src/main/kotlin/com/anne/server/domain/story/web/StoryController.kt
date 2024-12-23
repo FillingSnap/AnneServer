@@ -20,9 +20,9 @@ class StoryController (
 ) {
 
     @Operation(summary = "스토리 단일 조회")
-    @GetMapping("/{id}")
-    fun getStoryById(@PathVariable id: Long): ResponseEntity<StoryResponse> {
-        return ResponseEntity.ok().body(storyService.getStoryById(id))
+    @GetMapping("/{storyId}")
+    fun getStoryById(@PathVariable storyId: Long): ResponseEntity<StoryResponse> {
+        return ResponseEntity.ok().body(storyService.getStoryById(storyId))
     }
 
     @Operation(summary = "스토리 생성")

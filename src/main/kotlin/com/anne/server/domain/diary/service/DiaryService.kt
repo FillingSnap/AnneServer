@@ -1,11 +1,15 @@
 package com.anne.server.domain.diary.service
 
 import com.anne.server.domain.diary.dao.DiaryRepository
+import com.anne.server.domain.diary.domain.Diary
+import com.anne.server.domain.diary.dto.DiaryDto
 import com.anne.server.domain.diary.dto.response.DiaryResponse
 import com.anne.server.domain.diary.dto.request.UpdateRequest
+import com.anne.server.domain.story.service.StoryService
 import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
+import com.anne.server.logger
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.context.SecurityContextHolder
@@ -15,9 +19,13 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class DiaryService(
 
-    private val diaryRepository: DiaryRepository
+    private val diaryRepository: DiaryRepository,
+
+    private val storyService: StoryService
 
 ) {
+
+    private val log = logger()
 
     @Transactional(readOnly = true)
     fun getDiaryList(pageable: Pageable): Page<DiaryResponse> {
@@ -51,6 +59,23 @@ class DiaryService(
     }
 
     @Transactional
+    fun saveDiary(content: String, uuid: String) {
+        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
+
+        val newDiary = diaryRepository.save(
+            Diary(
+                emotion = "null",
+                content = content,
+                user = UserDto.toEntity(userDto),
+                uuid = uuid
+            )
+        )
+        log.info("Diary Saved: {}", uuid)
+
+        storyService.updateDiaryByUuid(DiaryDto.fromEntity(newDiary))
+    }
+
+    @Transactional
     fun updateDiary(uuid: String, request: UpdateRequest): DiaryResponse {
         val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
 
@@ -65,6 +90,7 @@ class DiaryService(
         diary.content = request.content
 
         diaryRepository.save(diary)
+        log.info("Diary Updated: {}", uuid)
 
         return DiaryResponse(diary)
     }

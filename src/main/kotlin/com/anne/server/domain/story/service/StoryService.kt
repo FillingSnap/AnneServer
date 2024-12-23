@@ -11,6 +11,7 @@ import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
 import com.anne.server.infra.amazon.service.S3Service
+import com.anne.server.logger
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -32,6 +33,8 @@ class StoryService(
     private val s3Service: S3Service
 
 ) {
+
+    private val log = logger()
 
     @Transactional(readOnly = true)
     fun getStoryById(id: Long): StoryResponse {
@@ -96,6 +99,7 @@ class StoryService(
         val storyList = storyRepository.findAllByUuid(diaryDto.uuid)
         storyList.forEach { it.diary = diary }
         storyRepository.saveAll(storyList)
+        log.info("Story List Updated: {}", diaryDto.uuid)
     }
 
     @Transactional(readOnly = true)

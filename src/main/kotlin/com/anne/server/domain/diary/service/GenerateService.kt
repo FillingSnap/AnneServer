@@ -8,8 +8,10 @@ import com.anne.server.domain.diary.enums.SseStatus
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.story.service.StoryService
 import com.anne.server.domain.user.dto.UserDto
+import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
 import com.anne.server.infra.openai.service.OpenAiService
+import com.anne.server.logger
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
@@ -27,15 +29,20 @@ class GenerateService (
 
     private val storyRepository: StoryRepository,
 
+    private val diaryService: DiaryService,
+
     private val storyService: StoryService,
 
     private val openAiService: OpenAiService
 
 ) {
 
+    private val log = logger()
+
     @Transactional
     fun generateDiary(delay: Long, uuid: String): Flux<SseResponse> {
         if (diaryRepository.existsDiaryByUuid(uuid)) {
+            log.error("{} - {}", uuid, ErrorCode.ALREADY_EXIST_UUID.message)
             return Flux.just(
                 SseResponse(
                     status = SseStatus.ERROR,
@@ -45,6 +52,7 @@ class GenerateService (
         }
 
         if (!storyRepository.existsStoryByUuid(uuid)) {
+            log.error("{} - {}", uuid, ErrorCode.STORY_NOT_FOUND.message)
             return Flux.just(
                 SseResponse(
                     status = SseStatus.ERROR,
@@ -53,7 +61,6 @@ class GenerateService (
             )
         }
 
-        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
         val imageTextList = storyService.getResizedImageAndTextByUuid(uuid)
 
         var result = ""
@@ -65,41 +72,25 @@ class GenerateService (
                     content = result
                 )
             } else {
-                println(it)
-                try {
-                    val json = JSONParser().parse(it) as JSONObject
-                    val choices = json["choices"] as JSONArray
-                    val content = if (choices[0] != null) {
-                        ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String? ?: ""
-                    } else {
-                        ""
-                    }
-                    result += content
-                    SseResponse(
-                        status = SseStatus.SUCCESS,
-                        content = content
-                    )
-                } catch (e: Exception) {
-                    SseResponse(
-                        status = SseStatus.ERROR,
-                        content = it
-                    )
+                val json = JSONParser().parse(it) as JSONObject
+                val choices = json["choices"] as JSONArray
+                val content = if (choices[0] != null) {
+                    ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String? ?: ""
+                } else {
+                    ""
                 }
+                result += content
+                SseResponse(
+                    status = SseStatus.SUCCESS,
+                    content = content
+                )
             }}
             .publishOn(Schedulers.boundedElastic())
             .doOnComplete {
-                val newDiary = diaryRepository.save(
-                    Diary(
-                        emotion = "null",
-                        content = result,
-                        user = UserDto.toEntity(userDto),
-                        uuid = uuid
-                    )
-                )
-
-                storyService.updateDiaryByUuid(DiaryDto.fromEntity(newDiary))
+                diaryService.saveDiary(result, uuid)
             }
             .doOnError {
+                log.error("{} - {}", uuid, it.message)
                 SseResponse(
                     status = SseStatus.ERROR,
                     content = it.message
