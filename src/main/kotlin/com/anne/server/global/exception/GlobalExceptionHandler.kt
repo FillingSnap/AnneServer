@@ -2,6 +2,7 @@ package com.anne.server.global.exception
 
 import com.anne.server.global.exception.dto.ExceptionResponse
 import com.anne.server.global.validation.dto.ValidationErrorField
+import com.anne.server.logger
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,6 +15,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+
+    private val log = logger()
 
     @ExceptionHandler(CustomException::class)
     fun handlerCustomException(
@@ -100,6 +103,8 @@ class GlobalExceptionHandler {
         e: Exception,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
+        log.error(e.message, e)
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
             ExceptionResponse(
                 status = HttpStatus.INTERNAL_SERVER_ERROR,
