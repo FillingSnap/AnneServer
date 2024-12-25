@@ -1,6 +1,6 @@
 package com.anne.server.global.auth.oauth
 
-import com.anne.server.domain.user.dto.UserPayloadDto
+import com.anne.server.domain.user.dto.Payload
 import com.anne.server.global.auth.AuthServiceInterface
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.core.env.Environment
@@ -19,11 +19,11 @@ class OAuthService (
 
 ): AuthServiceInterface {
 
-    override fun getPayload(code: String, registrationId: String): UserPayloadDto {
+    override fun getPayload(code: String, registrationId: String): Payload {
         val accessToken = getAccessToken(code, registrationId)
         val userResourceNode = getUserResource(accessToken, registrationId)!!
 
-        return UserPayloadDto(userResourceNode.get("id").asText(), userResourceNode.get("name").asText())
+        return Payload(userResourceNode.get("id").asText(), userResourceNode.get("name").asText())
     }
 
     fun getAccessToken(code: String, registrationId: String): String {

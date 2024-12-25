@@ -1,6 +1,6 @@
 package com.anne.server.infra.google
 
-import com.anne.server.domain.user.dto.UserPayloadDto
+import com.anne.server.domain.user.dto.Payload
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
@@ -22,7 +22,7 @@ class GoogleService (
 
     private val jsonFactory = GsonFactory.getDefaultInstance()
 
-    fun getPayload(idToken: String, registrationId: String): UserPayloadDto {
+    fun getPayload(idToken: String, registrationId: String): Payload {
         val verifier = GoogleIdTokenVerifier.Builder(transport, jsonFactory)
             .setAudience(Collections.singleton(clientId))
             .build()
@@ -38,7 +38,7 @@ class GoogleService (
         } else {
             val payload = token.payload
 
-            return UserPayloadDto(payload.subject, payload["name"] as String)
+            return Payload(payload.subject, payload["name"] as String)
         }
     }
 

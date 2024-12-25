@@ -1,7 +1,5 @@
 package com.anne.server.domain.user.domain
 
-import com.anne.server.domain.diary.domain.Diary
-import com.anne.server.domain.story.domain.Story
 import com.anne.server.global.model.BaseTimeEntity
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
@@ -22,20 +20,6 @@ class User (
 
     @ElementCollection(fetch = FetchType.EAGER)
     var styleList: List<String> = ArrayList(),
-
-    @OneToMany(
-        fetch = FetchType.LAZY,
-        mappedBy = "user",
-        cascade = [CascadeType.REMOVE]
-    )
-    val storyList: List<Story> = ArrayList(),
-
-    @OneToMany(
-        fetch = FetchType.LAZY,
-        mappedBy = "user",
-        cascade = [CascadeType.REMOVE]
-    )
-    val diaryList: List<Diary> = ArrayList()
 
 ): BaseTimeEntity(), UserDetails {
 
