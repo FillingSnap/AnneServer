@@ -2,7 +2,6 @@ package com.anne.server.global.exception
 
 import com.anne.server.global.exception.dto.ExceptionResponse
 import com.anne.server.global.validation.dto.ValidationErrorField
-import com.anne.server.logger
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -16,15 +15,11 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
-    private val log = logger()
-
     @ExceptionHandler(CustomException::class)
     fun handlerCustomException(
         e: CustomException,
-        request: HttpServletRequest
+        request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
-        log.error("{} - {}", getClientIpAddr(request), e.errorCode.message)
-
         return ResponseEntity.status(e.errorCode.status).body(
             ExceptionResponse(
                 status = e.errorCode.status,
@@ -37,10 +32,9 @@ class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException::class)
     fun handlerNoResourceFoundExceptionHandler(
         e: NoResourceFoundException,
-        request: HttpServletRequest
+        request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
         val errorCode = ErrorCode.WRONG_URL
-        log.error("{} - {} ({})", getClientIpAddr(request), errorCode.message, request.requestURI)
 
         return ResponseEntity.status(errorCode.status).body(
             ExceptionResponse(
@@ -55,11 +49,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException::class)
     protected fun handlerHttpMessageNotReadableException(
         e: HttpMessageNotReadableException,
-        request: HttpServletRequest
+        request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
-        log.error("{} - NoResourceFoundException", getClientIpAddr(request))
-
-        println(request.toString())
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ExceptionResponse(
@@ -74,9 +65,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     protected fun handlerMethodArgumentTypeMismatchException(
         e: MethodArgumentTypeMismatchException,
-        request: HttpServletRequest
+        request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<ValidationErrorField>> {
-        log.error("{} - 타입 불일치", getClientIpAddr(request))
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ExceptionResponse(
@@ -91,9 +81,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException::class)
     protected fun handlerMethodArgumentNotValidException(
         e: MethodArgumentNotValidException,
-        request: HttpServletRequest
+        request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<List<ValidationErrorField>>> {
-        log.error("{} - 유효성 검증 실패", getClientIpAddr(request))
         val errors = e.bindingResult.fieldErrors.map { ValidationErrorField(it.field, it.defaultMessage!!) }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -106,41 +95,18 @@ class GlobalExceptionHandler {
     }
 
     // 보안용
-//    @ExceptionHandler(Exception::class)
-//    protected fun handlerException(
-//        e: Exception,
-//        request: HttpServletRequest
-//    ): ResponseEntity<ExceptionResponse<String>> {
-//        log.error("{} - {}", getClientIpAddr(request), e.message)
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-//            ExceptionResponse(
-//                status = HttpStatus.INTERNAL_SERVER_ERROR,
-//                requestUri = request.requestURI,
-//                data = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase
-//            )
-//        )
-//    }
-
-    private fun getClientIpAddr(request: HttpServletRequest): String {
-        var ip = request.getHeader("X-Forwarded-For")
-
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.getHeader("Proxy-Client-IP")
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.getHeader("WL-Proxy-Client-IP")
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.getHeader("HTTP_CLIENT_IP")
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR")
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.remoteAddr
-        }
-
-        return ip
+    @ExceptionHandler(Exception::class)
+    protected fun handlerException(
+        e: Exception,
+        request: HttpServletRequest,
+    ): ResponseEntity<ExceptionResponse<String>> {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            ExceptionResponse(
+                status = HttpStatus.INTERNAL_SERVER_ERROR,
+                requestUri = request.requestURI,
+                data = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase
+            )
+        )
     }
 
 }

@@ -59,9 +59,7 @@ class DiaryService(
     }
 
     @Transactional
-    fun saveDiary(content: String, uuid: String) {
-        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
-
+    fun saveDiary(userDto: UserDto, content: String, uuid: String) {
         val newDiary = diaryRepository.save(
             Diary(
                 emotion = "null",

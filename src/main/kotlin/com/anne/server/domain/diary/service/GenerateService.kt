@@ -1,14 +1,11 @@
 package com.anne.server.domain.diary.service
 
 import com.anne.server.domain.diary.dao.DiaryRepository
-import com.anne.server.domain.diary.domain.Diary
-import com.anne.server.domain.diary.dto.DiaryDto
 import com.anne.server.domain.diary.dto.response.SseResponse
 import com.anne.server.domain.diary.enums.SseStatus
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.story.service.StoryService
 import com.anne.server.domain.user.dto.UserDto
-import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
 import com.anne.server.infra.openai.service.OpenAiService
 import com.anne.server.logger
@@ -39,27 +36,45 @@ class GenerateService (
 
     private val log = logger()
 
+    fun prettierLog(sseResponse: SseResponse, delay: Long, elapsedTime: Double): String {
+        return """
+        |
+        |[REQUEST] POST /diary/generate ${sseResponse.status} (${elapsedTime}) 
+        |>> REQUEST_PARAM: delay=${delay}
+        |>> RESULT: ${sseResponse.content}
+        """.trimIndent()
+    }
+
     @Transactional
     fun generateDiary(delay: Long, uuid: String): Flux<SseResponse> {
+        val startTime = System.currentTimeMillis()
         if (diaryRepository.existsDiaryByUuid(uuid)) {
-            log.error("{} - {}", uuid, ErrorCode.ALREADY_EXIST_UUID.message)
+            val sseResponse = SseResponse(
+                status = SseStatus.ERROR,
+                content = ErrorCode.ALREADY_EXIST_UUID.message
+            )
+
+            val prettierLog = prettierLog(sseResponse, delay, (System.currentTimeMillis() - startTime) / 1000.0)
+            log.error(prettierLog)
             return Flux.just(
-                SseResponse(
-                    status = SseStatus.ERROR,
-                    content = ErrorCode.ALREADY_EXIST_UUID.message
-                )
+                sseResponse
             )
         }
 
         if (!storyRepository.existsStoryByUuid(uuid)) {
-            log.error("{} - {}", uuid, ErrorCode.STORY_NOT_FOUND.message)
-            return Flux.just(
-                SseResponse(
+            val sseResponse = SseResponse(
                     status = SseStatus.ERROR,
-                    content = ErrorCode.STORY_NOT_FOUND.message
-                )
+            content = ErrorCode.STORY_NOT_FOUND.message
+            )
+
+            val prettierLog = prettierLog(sseResponse, delay, (System.currentTimeMillis() - startTime) / 1000.0)
+            log.error(prettierLog)
+            return Flux.just(
+                sseResponse
             )
         }
+
+        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
 
         val imageTextList = storyService.getResizedImageAndTextByUuid(uuid)
 
@@ -67,10 +82,14 @@ class GenerateService (
 
         return openAiService.generateDiary(imageTextList, delay).map {
             if (it == "[DONE]") {
-                SseResponse(
+                val sseResponse = SseResponse(
                     status = SseStatus.EOF,
                     content = result
                 )
+
+                val prettierLog = prettierLog(sseResponse, delay, (System.currentTimeMillis() - startTime) / 1000.0)
+                log.info(prettierLog)
+                sseResponse
             } else {
                 val json = JSONParser().parse(it) as JSONObject
                 val choices = json["choices"] as JSONArray
@@ -87,13 +106,19 @@ class GenerateService (
             }}
             .publishOn(Schedulers.boundedElastic())
             .doOnComplete {
-                diaryService.saveDiary(result, uuid)
+                diaryService.saveDiary(userDto, result, uuid)
             }
-            .doOnError {
-                log.error("{} - {}", uuid, it.message)
-                SseResponse(
+            .onErrorResume {
+                val sseResponse = SseResponse(
                     status = SseStatus.ERROR,
                     content = it.message
+                )
+
+                val prettierLog = prettierLog(sseResponse, delay, (System.currentTimeMillis() - startTime) / 1000.0)
+                log.error(prettierLog)
+
+                Flux.just(
+                    sseResponse
                 )
             }
     }
