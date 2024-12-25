@@ -63,6 +63,10 @@ dependencies {
     testRuntimeOnly("com.h2database:h2:2.1.214")
 }
 
+configurations.all {
+    exclude(group = "commons-logging", module = "commons-logging")
+}
+
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs += "-Xjsr305=strict"
