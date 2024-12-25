@@ -10,6 +10,6 @@ interface StoryRepository: JpaRepository<Story, Long> {
 
     fun existsStoryByUuid(uuid: String): Boolean
 
-    fun findAllByUpdatedAtBefore(time: LocalDateTime): List<Story>
+    fun findAllByUpdatedAtBeforeAndDiaryIsNull(time: LocalDateTime): List<Story>
 
 }

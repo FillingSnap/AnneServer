@@ -1,6 +1,6 @@
 package com.anne.server.global.auth.fedCM
 
-import com.anne.server.domain.user.dto.UserPayloadDto
+import com.anne.server.domain.user.dto.Payload
 import com.anne.server.global.auth.AuthServiceInterface
 import com.anne.server.global.exception.CustomException
 import com.anne.server.global.exception.ErrorCode
@@ -14,7 +14,7 @@ class FedCMService (
 
 ): AuthServiceInterface {
 
-    override fun getPayload(code: String, registrationId: String): UserPayloadDto {
+    override fun getPayload(code: String, registrationId: String): Payload {
         when (registrationId) {
             "google" -> return googleService.getPayload(code, registrationId)
             else -> throw CustomException(ErrorCode.WRONG_REGISTRATION_ID)

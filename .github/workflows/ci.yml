@@ -16,6 +16,8 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_PROD_BLUE_YML }}" | base64 --decode > ./src/main/resources/application-prod-blue.yml
+          echo "${{ secrets.APPLICATION_PROD_GREEN_YML }}" | base64 --decode > ./src/main/resources/application-prod-green.yml
         shell: bash
 
       - name: Setup Java JDK
