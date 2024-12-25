@@ -1,4 +1,4 @@
-package com.anne.server.global.config.security
+package com.anne.server.global.config
 
 import com.anne.server.global.auth.jwt.AuthenticationEntryPoint
 import com.anne.server.global.auth.jwt.AuthenticationFilter
@@ -28,7 +28,7 @@ class SecurityConfig (
             it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
         .authorizeHttpRequests {
-            it.requestMatchers("/ws", "/diary/test", "/user/token/refresh", "/error", "/login/oauth2/**", "/login/fedCM/**",
+            it.requestMatchers("/diary/test", "/user/token/refresh", "/error", "/login/oauth2/**", "/login/fedCM/**",
                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
         }

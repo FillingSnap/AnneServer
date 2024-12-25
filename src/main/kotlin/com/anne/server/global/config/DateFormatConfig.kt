@@ -1,4 +1,4 @@
-package com.anne.server.global.config.format
+package com.anne.server.global.config
 
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
