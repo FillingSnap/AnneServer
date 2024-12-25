@@ -36,6 +36,6 @@ out/
 ### VS Code ###
 .vscode/
 
-log/*.log
+log/**/*.log
 src/main/resources/json/*
 src/main/resources/*.yml
