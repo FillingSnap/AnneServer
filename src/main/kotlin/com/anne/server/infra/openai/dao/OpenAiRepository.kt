@@ -1,7 +1,7 @@
 package com.anne.server.infra.openai.dao
 
-import com.anne.server.global.exception.CustomException
-import com.anne.server.global.exception.ErrorCode
+import com.anne.server.global.exception.exceptions.CustomException
+import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.infra.openai.config.JsonConfig
 import com.anne.server.infra.openai.dto.ChatResponse
 import org.springframework.beans.factory.annotation.Value
@@ -60,8 +60,9 @@ class OpenAiRepository (
             .header("Authorization", "Bearer $token")
             .bodyValue(jsonConfig.getGenerateDiaryRequestJson(question))
             .accept(MediaType.TEXT_EVENT_STREAM)
-            .retrieve()
-            .bodyToFlux(String::class.java)
+            .exchangeToFlux { response ->
+                response.bodyToFlux(String::class.java)
+            }
             .delayElements(Duration.ofMillis(delay))
 
         return eventStream

@@ -1,20 +1,19 @@
 package com.anne.server.global.logging.dto
 
+import com.anne.server.domain.diary.dto.response.SseResponse
+import com.anne.server.domain.diary.enums.SseStatus
 import jakarta.servlet.http.HttpServletRequest
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
-import org.springframework.http.HttpStatus
-import org.springframework.web.util.ContentCachingRequestWrapper
-import org.springframework.web.util.ContentCachingResponseWrapper
 import java.awt.Color
 
-data class LogMessage (
+data class SseLogMessage (
 
     val httpMethod: String,
 
     val requestUri: String,
 
-    val httpStatus: HttpStatus,
+    val sseStatus: SseStatus,
 
     val clientIp: String,
 
@@ -24,32 +23,29 @@ data class LogMessage (
 
     val requestParam: String?,
 
-    val requestBody: String?,
-
-    val responseBody: String?
+    val sseResult: String?
 
 ) {
 
     companion object {
         fun createInstance(
-            requestWrapper: ContentCachingRequestWrapper,
-            responseWrapper: ContentCachingResponseWrapper,
-            elapsedTime: Double
-        ): LogMessage {
-            return LogMessage(
-                httpMethod = requestWrapper.method,
-                requestUri = requestWrapper.requestURI,
-                httpStatus = HttpStatus.valueOf(responseWrapper.status),
-                clientIp = getClientIpAddr(requestWrapper),
+            request: HttpServletRequest,
+            elapsedTime: Double,
+            sseResponse: SseResponse
+        ): SseLogMessage {
+            return SseLogMessage(
+                httpMethod = request.method,
+                requestUri = request.requestURI,
+                sseStatus = sseResponse.status,
+                clientIp = getClientIpAddr(request),
                 elapsedTime = elapsedTime,
-                headers = requestWrapper.headerNames.toList()
-                    .associateWith { requestWrapper.getHeader(it) }
+                headers = request.headerNames.toList()
+                    .associateWith { request.getHeader(it) }
                     .toString(),
-                requestParam = requestWrapper.parameterMap
+                requestParam = request.parameterMap
                     .map { (key, value) -> "$key=${value.joinToString()}" }
                     .joinToString("&"),
-                requestBody = String(requestWrapper.contentAsByteArray),
-                responseBody = String(responseWrapper.contentAsByteArray)
+                sseResult = sseResponse.content
             )
         }
 
@@ -79,12 +75,11 @@ data class LogMessage (
     fun toPrettierLog(): String {
         return """
         |
-        |[REQUEST] ${this.httpMethod} ${this.requestUri} ${this.httpStatus} (${this.elapsedTime})
+        |[REQUEST] ${this.httpMethod} ${this.requestUri} ${this.sseStatus} (${this.elapsedTime})
         |>> CLIENT_IP: ${this.clientIp}
         |>> HEADERS: ${this.headers}
         |>> REQUEST_PARAM: ${this.requestParam}
-        |>> REQUEST_BODY: ${this.requestBody}
-        |>> RESPONSE_BODY: ${this.responseBody}
+        |>> SSE RESULT: ${this.sseResult}
         """.trimIndent()
     }
 
@@ -93,13 +88,12 @@ data class LogMessage (
             .setTitle("[SERVER LOG] Error Notification")
             .setColor(Color.RED)
             .addField("Request Method & URI", "[${this.httpMethod}] ${this.requestUri}", false)
-            .addField("HTTP Status", this.httpStatus.toString(), true)
-            .addField("Elapsed Time", "${this.elapsedTime}ms", true)
+            .addField("SSE Status", "${this.sseStatus}", true)
+            .addField("Elapsed Time", "${this.elapsedTime}", true)
             .addField("Client IP", this.clientIp, false)
             .addField("Headers", this.headers ?: "null", false)
             .addField("Request Params", this.requestParam?.take(1000) ?: "null", false)
-            .addField("Request Body", this.requestBody?.take(500) ?: "null", false)
-            .addField("Response Body", this.responseBody?.take(500) ?: "null", false)
+            .addField("SSE Result", this.sseResult.toString(), false)
             .setTimestamp(java.time.OffsetDateTime.now())
             .build()
     }
