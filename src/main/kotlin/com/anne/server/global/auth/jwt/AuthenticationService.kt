@@ -2,8 +2,8 @@ package com.anne.server.global.auth.jwt
 
 import com.anne.server.domain.user.dto.response.TokenResponse
 import com.anne.server.domain.user.service.UserService
-import com.anne.server.global.exception.CustomException
-import com.anne.server.global.exception.ErrorCode
+import com.anne.server.global.exception.exceptions.CustomException
+import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.infra.redis.dao.RedisRepository
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
