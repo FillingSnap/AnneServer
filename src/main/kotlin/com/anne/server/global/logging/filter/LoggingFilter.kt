@@ -1,6 +1,6 @@
 package com.anne.server.global.logging.filter
 
-import com.anne.server.global.logging.dto.LogMessage
+import com.anne.server.global.logging.dto.CustomServerLog
 import com.anne.server.infra.discord.BotService
 import com.anne.server.logger
 import jakarta.servlet.FilterChain
@@ -45,7 +45,7 @@ class LoggingFilter (
         val end = System.currentTimeMillis()
 
         try {
-            val logMessage = LogMessage.createInstance(
+            val logMessage = CustomServerLog.createInstance(
                 requestWrapper = cachingRequestWrapper,
                 responseWrapper = cachingResponseWrapper,
                 elapsedTime = (end - startTime) / 1000.0

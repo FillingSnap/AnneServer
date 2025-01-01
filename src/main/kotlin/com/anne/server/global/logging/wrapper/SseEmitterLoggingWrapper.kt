@@ -2,7 +2,7 @@ package com.anne.server.global.logging.wrapper
 
 import com.anne.server.domain.diary.dto.response.SseResponse
 import com.anne.server.domain.diary.enums.SseStatus
-import com.anne.server.global.logging.dto.SseLogMessage
+import com.anne.server.global.logging.dto.SseServerLog
 import com.anne.server.infra.discord.BotService
 import com.anne.server.logger
 import jakarta.servlet.http.HttpServletRequest
@@ -36,7 +36,7 @@ class SseEmitterLoggingWrapper (
             content = result
         )
 
-        val sseLogMessage = SseLogMessage.createInstance(
+        val sseLogMessage = SseServerLog.createInstance(
             request, (endTime - startTime) / 1000.0, sseResponse
         )
 
@@ -53,7 +53,7 @@ class SseEmitterLoggingWrapper (
             content = ex.message
         )
 
-        val sseLogMessage = SseLogMessage.createInstance(
+        val sseLogMessage = SseServerLog.createInstance(
             request, (endTime - startTime) / 1000.0, sseResponse
 
         )

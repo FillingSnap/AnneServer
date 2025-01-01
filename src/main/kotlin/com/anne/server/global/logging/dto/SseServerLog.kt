@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import java.awt.Color
 
-data class SseLogMessage (
+data class SseServerLog (
 
     val httpMethod: String,
 
@@ -25,15 +25,15 @@ data class SseLogMessage (
 
     val sseResult: String?
 
-) {
+): ServerLog() {
 
     companion object {
         fun createInstance(
             request: HttpServletRequest,
             elapsedTime: Double,
             sseResponse: SseResponse
-        ): SseLogMessage {
-            return SseLogMessage(
+        ): SseServerLog {
+            return SseServerLog(
                 httpMethod = request.method,
                 requestUri = request.requestURI,
                 sseStatus = sseResponse.status,
@@ -48,31 +48,9 @@ data class SseLogMessage (
                 sseResult = sseResponse.content
             )
         }
-
-        private fun getClientIpAddr(request: HttpServletRequest): String {
-            var ip = request.getHeader("X-Forwarded-For")
-
-            if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-                ip = request.getHeader("Proxy-Client-IP")
-            }
-            if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-                ip = request.getHeader("WL-Proxy-Client-IP")
-            }
-            if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-                ip = request.getHeader("HTTP_CLIENT_IP")
-            }
-            if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-                ip = request.getHeader("HTTP_X_FORWARDED_FOR")
-            }
-            if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-                ip = request.remoteAddr
-            }
-
-            return ip
-        }
     }
 
-    fun toPrettierLog(): String {
+    override fun toPrettierLog(): String {
         return """
         |
         |[REQUEST] ${this.httpMethod} ${this.requestUri} ${this.sseStatus} (${this.elapsedTime})
@@ -83,10 +61,10 @@ data class SseLogMessage (
         """.trimIndent()
     }
 
-    fun toPrettierEmbedMessage(): MessageEmbed {
+    override fun toPrettierEmbedMessage(): MessageEmbed {
         return EmbedBuilder()
             .setTitle("[SERVER LOG] Error Notification")
-            .setColor(Color.RED)
+            .setColor(if (sseStatus == SseStatus.ERROR) Color.RED else Color.GREEN)
             .addField("Request Method & URI", "[${this.httpMethod}] ${this.requestUri}", false)
             .addField("SSE Status", "${this.sseStatus}", true)
             .addField("Elapsed Time", "${this.elapsedTime}", true)
