@@ -20,7 +20,6 @@ class BotConfig (
     fun jda(): JDA {
         if (jda == null) {
             jda = JDABuilder.createDefault(token).build()
-            jda!!.awaitReady()
         }
         return jda!!
     }
