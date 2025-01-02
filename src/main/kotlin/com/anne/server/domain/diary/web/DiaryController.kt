@@ -7,6 +7,7 @@ import com.anne.server.global.validation.ValidationSequence
 import com.anne.server.domain.diary.dto.response.SseResponse
 import com.anne.server.domain.diary.service.GenerateService
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -15,6 +16,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import reactor.core.publisher.Flux
 
 @RestController
@@ -33,9 +35,10 @@ class DiaryController (
         produces = [MediaType.TEXT_EVENT_STREAM_VALUE]
     ) fun generateDiary(
         @RequestParam delay: Long,
-        @RequestBody uuid: String
-    ): ResponseEntity<Flux<SseResponse>> {
-        return ResponseEntity.ok().body(generateService.generateDiary(delay, uuid))
+        @RequestBody uuid: String,
+        request: HttpServletRequest
+    ): ResponseEntity<SseEmitter> {
+        return ResponseEntity.ok().body(generateService.generateDiary(delay, uuid, request))
     }
 
     @Operation(summary = "일기 전체 조회")
@@ -59,12 +62,6 @@ class DiaryController (
         @RequestBody @Validated(value = [ValidationSequence::class]) request: UpdateRequest
     ): ResponseEntity<DiaryResponse> {
         return ResponseEntity.ok().body(diaryService.updateDiary(uuid, request))
-    }
-
-    @Operation(summary = "SSE 테스트")
-    @GetMapping("/test", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun test(@RequestParam delay: Long): Flux<SseResponse> {
-        return generateService.test(delay)
     }
 
 }

@@ -2,8 +2,8 @@ package com.anne.server.global.auth.fedCM
 
 import com.anne.server.domain.user.dto.Payload
 import com.anne.server.global.auth.AuthServiceInterface
-import com.anne.server.global.exception.CustomException
-import com.anne.server.global.exception.ErrorCode
+import com.anne.server.global.exception.exceptions.CustomException
+import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.infra.google.GoogleService
 import org.springframework.stereotype.Service
 

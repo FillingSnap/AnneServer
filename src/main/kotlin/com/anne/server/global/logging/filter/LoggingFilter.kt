@@ -1,6 +1,7 @@
 package com.anne.server.global.logging.filter
 
-import com.anne.server.global.logging.dto.LogMessage
+import com.anne.server.global.logging.dto.CustomServerLog
+import com.anne.server.infra.discord.BotService
 import com.anne.server.logger
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -13,7 +14,11 @@ import org.springframework.web.util.ContentCachingRequestWrapper
 import org.springframework.web.util.ContentCachingResponseWrapper
 
 @Component
-class LoggingFilter: OncePerRequestFilter() {
+class LoggingFilter (
+
+    private val botService: BotService
+
+): OncePerRequestFilter() {
 
     private final val log = logger()
 
@@ -40,7 +45,7 @@ class LoggingFilter: OncePerRequestFilter() {
         val end = System.currentTimeMillis()
 
         try {
-            val logMessage = LogMessage.createInstance(
+            val logMessage = CustomServerLog.createInstance(
                 requestWrapper = cachingRequestWrapper,
                 responseWrapper = cachingResponseWrapper,
                 elapsedTime = (end - startTime) / 1000.0
@@ -49,12 +54,13 @@ class LoggingFilter: OncePerRequestFilter() {
             if (logMessage.httpStatus == HttpStatus.OK) {
                 log.info(logMessage.toPrettierLog())
             } else {
+                botService.sendMessage("Error", logMessage.toPrettierEmbedMessage())
                 log.error(logMessage.toPrettierLog())
             }
 
             cachingResponseWrapper.copyBodyToResponse()
         } catch (e: Exception) {
-            log.error("[${this::class.simpleName}] Logging 실패")
+            log.error("Logging 실패: ${e.message}")
         }
     }
 

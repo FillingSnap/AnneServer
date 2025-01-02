@@ -6,10 +6,9 @@ import com.anne.server.domain.story.dto.request.GenerateRequest
 import com.anne.server.domain.story.dao.StoryRepository
 import com.anne.server.domain.story.domain.Story
 import com.anne.server.domain.story.dto.response.StoryResponse
-import com.anne.server.domain.user.domain.User
 import com.anne.server.domain.user.dto.UserDto
-import com.anne.server.global.exception.CustomException
-import com.anne.server.global.exception.ErrorCode
+import com.anne.server.global.exception.exceptions.CustomException
+import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.infra.amazon.service.S3Service
 import com.anne.server.logger
 import org.springframework.data.repository.findByIdOrNull
