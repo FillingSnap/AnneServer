@@ -1,6 +1,8 @@
-package com.anne.server.global.exception
+package com.anne.server.global.exception.handler
 
 import com.anne.server.global.exception.dto.ExceptionResponse
+import com.anne.server.global.exception.enums.ErrorCode
+import com.anne.server.global.exception.exceptions.CustomException
 import com.anne.server.global.validation.dto.ValidationErrorField
 import com.anne.server.logger
 import jakarta.servlet.http.HttpServletRequest
@@ -18,6 +20,7 @@ class GlobalExceptionHandler {
 
     private val log = logger()
 
+    // Custom Exception
     @ExceptionHandler(CustomException::class)
     fun handlerCustomException(
         e: CustomException,
@@ -32,6 +35,7 @@ class GlobalExceptionHandler {
         )
     }
 
+    // Resource Not Found
     @ExceptionHandler(NoResourceFoundException::class)
     fun handlerNoResourceFoundExceptionHandler(
         e: NoResourceFoundException,
@@ -103,7 +107,7 @@ class GlobalExceptionHandler {
         e: Exception,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
-        log.error(e.message, e)
+        log.error(e.message)
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
             ExceptionResponse(

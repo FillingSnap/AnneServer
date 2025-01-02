@@ -1,10 +1,9 @@
 package com.anne.server.domain.user.service
 
 import com.anne.server.domain.user.dao.UserRepository
-import com.anne.server.domain.user.domain.User
 import com.anne.server.domain.user.dto.UserDto
-import com.anne.server.global.exception.CustomException
-import com.anne.server.global.exception.ErrorCode
+import com.anne.server.global.exception.exceptions.CustomException
+import com.anne.server.global.exception.enums.ErrorCode
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service

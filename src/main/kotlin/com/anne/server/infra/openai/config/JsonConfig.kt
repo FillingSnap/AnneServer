@@ -114,21 +114,4 @@ class JsonConfig (
         return obj
     }
 
-//    private fun imageResize(image: String): ByteArray {
-//        val inputStream = s3Service.getObject(image)
-//
-//        val sourceImage = ImageIO.read(inputStream)
-//        val width = 640
-//        val height = 640
-//        val resizeImage = BufferedImage(width, height, sourceImage.type)
-//        val g = resizeImage.createGraphics()
-//        g.drawImage(sourceImage, 0, 0, width, height, null)
-//        g.dispose()
-//
-//        val byteArrayOutputStream = ByteArrayOutputStream()
-//        ImageIO.write(resizeImage, "png", byteArrayOutputStream)
-//
-//        return byteArrayOutputStream.toByteArray()
-//    }
-
 }

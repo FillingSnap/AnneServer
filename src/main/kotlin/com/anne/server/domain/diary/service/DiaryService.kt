@@ -7,8 +7,8 @@ import com.anne.server.domain.diary.dto.response.DiaryResponse
 import com.anne.server.domain.diary.dto.request.UpdateRequest
 import com.anne.server.domain.story.service.StoryService
 import com.anne.server.domain.user.dto.UserDto
-import com.anne.server.global.exception.CustomException
-import com.anne.server.global.exception.ErrorCode
+import com.anne.server.global.exception.exceptions.CustomException
+import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.logger
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable

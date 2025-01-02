@@ -1,4 +1,4 @@
-package com.anne.server.global.exception
+package com.anne.server.global.exception.enums
 
 import org.springframework.http.HttpStatus
 

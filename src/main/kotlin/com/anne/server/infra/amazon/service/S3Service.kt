@@ -4,10 +4,9 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.DeleteObjectRequest
 import com.amazonaws.services.s3.model.GetObjectRequest
 import com.amazonaws.services.s3.model.ObjectMetadata
-import com.anne.server.domain.user.domain.User
 import com.anne.server.domain.user.dto.UserDto
-import com.anne.server.global.exception.CustomException
-import com.anne.server.global.exception.ErrorCode
+import com.anne.server.global.exception.exceptions.CustomException
+import com.anne.server.global.exception.enums.ErrorCode
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
