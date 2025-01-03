@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.JDABuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.Executors
 
 @Configuration
 class BotConfig (
@@ -22,7 +22,7 @@ class BotConfig (
     fun jda(): JDA {
         log.info("JDA Build Start")
         return JDABuilder.createDefault(token)
-            .setCallbackPool(ForkJoinPool(4))
+            .setCallbackPool(Executors.newFixedThreadPool(4))
             .build()
     }
 
