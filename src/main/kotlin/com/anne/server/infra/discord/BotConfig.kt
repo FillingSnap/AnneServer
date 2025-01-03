@@ -24,7 +24,7 @@ class BotConfig (
     fun jda(): JDA {
         log.info("JDA Build Start")
         return JDABuilder.createDefault(token)
-            .setRateLimitElastic(ForkJoinPool.commonPool())
+            .setRateLimitScheduler(Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors()))
             .build()
     }
 
