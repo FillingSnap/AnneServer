@@ -22,7 +22,7 @@ class BotConfig (
     fun jda(): JDA {
         log.info("JDA Build Start")
         return JDABuilder.createDefault(token)
-            .setCallbackPool(ForkJoinPool.commonPool())
+            .setCallbackPool(ForkJoinPool(4))
             .build()
     }
 
