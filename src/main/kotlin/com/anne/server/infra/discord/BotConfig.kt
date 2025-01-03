@@ -1,5 +1,6 @@
 package com.anne.server.infra.discord
 
+import com.anne.server.logger
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import org.springframework.beans.factory.annotation.Value
@@ -14,14 +15,13 @@ class BotConfig (
 
 ) {
 
-    private final var jda: JDA? = null
+    private val log = logger()
 
     @Bean
     fun jda(): JDA {
-        if (jda == null) {
-            jda = JDABuilder.createDefault(token).build()
-        }
-        return jda!!
+        log.info("JDA Build Start")
+        return JDABuilder.createDefault(token)
+            .build()
     }
 
 }
