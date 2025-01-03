@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.ForkJoinPool
 
 @Configuration
 class BotConfig (
@@ -20,15 +21,10 @@ class BotConfig (
     private val log = logger()
 
     @Bean
-    fun executorService(): ExecutorService {
-        return Executors.newFixedThreadPool(8)
-    }
-
-    @Bean
     fun jda(): JDA {
         log.info("JDA Build Start")
         return JDABuilder.createDefault(token)
-            .setRateLimitElastic(executorService())
+            .setRateLimitElastic(ForkJoinPool.commonPool())
             .build()
     }
 
