@@ -1,6 +1,7 @@
 package com.anne.server.infra.discord
 
-import net.dv8tion.jda.api.JDA
+import jakarta.annotation.PreDestroy
+import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -11,9 +12,12 @@ class BotService (
     @Value("\${discord.channel-id}")
     private val channelId: String,
 
-    private val jda: JDA
+    @Value("\${discord.bot.token}")
+    private val token: String
 
 ) {
+
+    private final val jda = JDABuilder.createDefault(token).build().awaitReady()
 
     fun sendMessage(title: String, messageEmbed: MessageEmbed) {
         try {
@@ -22,6 +26,11 @@ class BotService (
         } catch (e: Exception) {
             println(e)
         }
+    }
+
+    @PreDestroy
+    fun shutdown() {
+        jda.shutdownNow()
     }
 
 }
