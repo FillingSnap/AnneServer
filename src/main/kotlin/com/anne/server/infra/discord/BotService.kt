@@ -1,10 +1,10 @@
 package com.anne.server.infra.discord
 
-import jakarta.annotation.PreDestroy
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.util.concurrent.Executors
 
 @Service
 class BotService (
@@ -17,7 +17,10 @@ class BotService (
 
 ) {
 
-    private final val jda = JDABuilder.createDefault(token).build().awaitReady()
+    private final val jda = JDABuilder.createDefault(token)
+        .setCallbackPool(Executors.newFixedThreadPool(4))
+        .build()
+        .awaitReady()
 
     fun sendMessage(title: String, messageEmbed: MessageEmbed) {
         try {
@@ -26,11 +29,6 @@ class BotService (
         } catch (e: Exception) {
             println(e)
         }
-    }
-
-    @PreDestroy
-    fun shutdown() {
-        jda.shutdownNow()
     }
 
 }
