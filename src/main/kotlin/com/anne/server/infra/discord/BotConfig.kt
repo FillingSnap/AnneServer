@@ -22,7 +22,7 @@ class BotConfig (
     fun jda(): JDA {
         log.info("JDA Build Start")
         return JDABuilder.createDefault(token)
-            .setCallbackPool(Executors.newCachedThreadPool())
+            .setCallbackPool(Executors.newSingleThreadExecutor())
             .build()
     }
 
