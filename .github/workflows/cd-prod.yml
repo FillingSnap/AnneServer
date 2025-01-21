@@ -46,9 +46,10 @@ jobs:
       - name: Executing Remote ssh Commands Using Password
         uses: appleboy/ssh-action@master
         with:
+          password: ${{ secrets.PROD_PASSWORD }}
           host: ${{ secrets.PROD_HOST }}
           username: ubuntu
-          password: ${{ secrets.POST_PASSWORD }}
+          port: '22'
           script: |
             export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             sudo chmod 777 /home/ubuntu/sh/deploy.sh

@@ -1,0 +1,27 @@
+name: test
+
+on:
+  push:
+    branches:
+      - 'cd/dev'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Executing Remote ssh Commands Using Password
+        uses: appleboy/ssh-action@master
+        with:
+          password: ${{ secrets.DEV_PASSWORD }}
+          host: ${{ secrets.DEV_HOST }}
+          username: ubuntu
+          port: '22'
+          script: |
+            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            sudo chmod 777 /home/ubuntu/sh/deploy.sh
+            sudo /home/ubuntu/sh/deploy.sh $DOCKER_USERNAME
