@@ -18,4 +18,7 @@ COPY --from=build --chown=app-api:app-api /build/src/main/resources/json/diary.j
 
 USER app-api
 
+RUN mkdir /tmp/logs
+RUN chmod -R 777 /tmp/logs
+
 CMD ["java", "-Dspring.profiles.active=${SPRING_PROFILE}", "-jar", "app.jar"]
