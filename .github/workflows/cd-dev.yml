@@ -3,7 +3,7 @@ name: CD
 on:
   push:
     branches:
-      - 'main'
+      - 'develop'
 
 permissions:
   contents: read
@@ -25,8 +25,8 @@ jobs:
         run: |
           mkdir -p ./src/main/resources/json
           echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
-          echo "${{ secrets.APPLICATION_PROD_BLUE_YML }}" | base64 --decode > ./src/main/resources/application-prod-blue.yml
-          echo "${{ secrets.APPLICATION_PROD_GREEN_YML }}" | base64 --decode > ./src/main/resources/application-prod-green.yml
+          echo "${{ secrets.APPLICATION_DEV_BLUE_YML }}" | base64 --decode > ./src/main/resources/application-prod-blue.yml
+          echo "${{ secrets.APPLICATION_DEV_GREEN_YML }}" | base64 --decode > ./src/main/resources/application-prod-green.yml
         shell: bash
 
       - name: Create JSON
@@ -46,10 +46,10 @@ jobs:
       - name: Executing Remote ssh Commands Using Password
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
+          host: ${{ secrets.DEV_HOST }}
           username: ubuntu
-          key: ${{ secrets.KEY }}
+          password: ${{ secrets.DEV_PASSWORD }}
           script: |
             export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-            sudo chmod 777 /home/ubuntu/docker/deploy.sh
-            sudo /home/ubuntu/docker/deploy.sh $DOCKER_USERNAME
+            sudo chmod 777 /home/ubuntu/sh/deploy.sh
+            sudo /home/ubuntu/sh/deploy.sh $DOCKER_USERNAME
