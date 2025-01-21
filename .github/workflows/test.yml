@@ -19,6 +19,7 @@ jobs:
         with:
           password: ${{ secrets.DEV_PASSWORD }}
           host: ${{ secrets.DEV_HOST }}
+          key: ${{ secrets.DEV_KEY }}
           username: ubuntu
           port: '22'
           script: |
