@@ -47,8 +47,8 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEV_HOST }}
+          key: ${{ secrets.DEV_KEY }}
           username: ubuntu
-          password: ${{ secrets.DEV_PASSWORD }}
           script: |
             export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             sudo chmod 777 /home/ubuntu/sh/deploy.sh
