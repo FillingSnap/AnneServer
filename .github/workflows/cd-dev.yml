@@ -25,8 +25,8 @@ jobs:
         run: |
           mkdir -p ./src/main/resources/json
           echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > ./src/main/resources/application.yml
-          echo "${{ secrets.APPLICATION_DEV_BLUE_YML }}" | base64 --decode > ./src/main/resources/application-prod-blue.yml
-          echo "${{ secrets.APPLICATION_DEV_GREEN_YML }}" | base64 --decode > ./src/main/resources/application-prod-green.yml
+          echo "${{ secrets.APPLICATION_DEV_BLUE_YML }}" | base64 --decode > ./src/main/resources/application-dev-blue.yml
+          echo "${{ secrets.APPLICATION_DEV_GREEN_YML }}" | base64 --decode > ./src/main/resources/application-dev-green.yml
         shell: bash
 
       - name: Create JSON
