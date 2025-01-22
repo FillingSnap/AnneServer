@@ -41,7 +41,7 @@
         </root>
     </springProfile>
     <!-- prod  -->
-    <springProfile name="prod-blue,prod-green">
+    <springProfile name="dev-blue,dev-green,prod-blue,prod-green">
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="FILE" />

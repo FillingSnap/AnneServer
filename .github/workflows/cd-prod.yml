@@ -1,4 +1,4 @@
-name: CD
+name: CD-PROD
 
 on:
   push:
@@ -46,10 +46,10 @@ jobs:
       - name: Executing Remote ssh Commands Using Password
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
+          host: ${{ secrets.PROD_HOST }}
+          key: ${{ secrets.PROD_KEY }}
           username: ubuntu
-          key: ${{ secrets.KEY }}
           script: |
             export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-            sudo chmod 777 /home/ubuntu/docker/deploy.sh
-            sudo /home/ubuntu/docker/deploy.sh $DOCKER_USERNAME
+            sudo chmod 777 /home/ubuntu/sh/deploy.sh
+            sudo /home/ubuntu/sh/deploy.sh $DOCKER_USERNAME
