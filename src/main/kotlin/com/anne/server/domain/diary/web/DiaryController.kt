@@ -64,4 +64,12 @@ class DiaryController (
         return ResponseEntity.ok().body(diaryService.updateDiary(uuid, request))
     }
 
+    @Operation(summary = "일기 삭제")
+    @DeleteMapping("/delete/{uuid}")
+    fun deleteDiary(
+        @PathVariable("uuid") uuid: String
+    ): ResponseEntity<Unit> {
+        return ResponseEntity.ok().body(diaryService.deleteDiary(uuid))
+    }
+
 }

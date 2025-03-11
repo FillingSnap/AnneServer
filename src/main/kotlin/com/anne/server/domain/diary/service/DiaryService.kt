@@ -93,4 +93,20 @@ class DiaryService(
         return DiaryResponse(diary)
     }
 
+    @Transactional
+    fun deleteDiary(uuid: String) {
+        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
+
+        val diary = diaryRepository.findByUuid(uuid)
+            ?: throw CustomException(ErrorCode.DIARY_NOT_FOUND)
+
+        // 해당 일기의 소유자가 아닌 경우
+        if (userDto.id != diary.user.id!!) {
+            throw CustomException(ErrorCode.NOT_YOUR_DIARY)
+        }
+
+        diaryRepository.delete(diary)
+        log.info("Diary Deleted: {}", uuid)
+    }
+
 }
