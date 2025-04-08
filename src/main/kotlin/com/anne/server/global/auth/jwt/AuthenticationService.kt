@@ -38,26 +38,26 @@ class AuthenticationService (
         secretKey = Base64.getEncoder().encodeToString(secretKey.toByteArray())
     }
 
-    fun generateAccessToken(id: String, provider: String, uid: String): String {
+    fun generateAccessToken(id: String, provider: String, uid: String, accessTimeout: Long?): String {
         val tokenClaims = Jwts.claims()
             .subject(id)
             .add(mapOf(Pair("provider", provider), Pair("uid", uid)))
             .build()
 
-        return generateToken(tokenPeriod, tokenClaims)
+        return generateToken(accessTimeout ?: tokenPeriod, tokenClaims)
     }
 
-    fun generateRefreshToken(id: String): String {
+    fun generateRefreshToken(id: String, refreshTimeout: Long?): String {
         val refreshClaims = Jwts.claims()
             .subject(id)
             .build()
 
-        val refresh = generateToken(refreshPeriod, refreshClaims)
-        redisRepository.setValues(id, refresh, Duration.ofMillis(refreshPeriod))
+        val refresh = generateToken(refreshTimeout ?: refreshPeriod, refreshClaims)
+        redisRepository.setValues(id, refresh, Duration.ofMillis(refreshTimeout ?: refreshPeriod))
         return refresh
     }
 
-    fun refreshToken(refreshToken: String): TokenResponse {
+    fun refreshToken(refreshToken: String, accessTimeout: Long?): TokenResponse {
         val split = refreshToken.split(" ")
         if (split.size != 2 || split[0] != "Bearer") {
             throw CustomException(ErrorCode.INVALID_TOKEN)
@@ -69,12 +69,7 @@ class AuthenticationService (
         }
 
         val user = userService.getUserById(id.toLong())
-        val claims = Jwts.claims()
-            .subject(id)
-            .add(mapOf(Pair("provider", user.provider), Pair("uid", user.uid)))
-            .build()
-
-        return TokenResponse(generateToken(tokenPeriod, claims))
+        return TokenResponse(generateAccessToken(id, user.provider, user.uid, accessTimeout))
     }
 
     fun generateToken(period: Long, claims: Claims): String {
