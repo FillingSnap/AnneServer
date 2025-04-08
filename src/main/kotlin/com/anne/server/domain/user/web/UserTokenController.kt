@@ -22,14 +22,19 @@ class UserTokenController (
 
     @Operation(summary = "Access Token 재발급")
     @GetMapping("/refresh")
-    fun refresh(@RequestHeader("Refresh") refreshToken: String): ResponseEntity<TokenResponse> {
-        return ResponseEntity.ok().body(authenticationService.refreshToken(refreshToken))
+    fun refresh(
+        @RequestHeader("Access-Timeout") accessTimeout: Long?,
+        @RequestHeader("Refresh") refreshToken: String
+    ): ResponseEntity<TokenResponse> {
+        return ResponseEntity.ok().body(authenticationService.refreshToken(refreshToken, accessTimeout))
     }
 
     @Operation(summary = "Refresh Token 재발급")
     @GetMapping("/refresh/generate")
-    fun generateRefreshToken(): ResponseEntity<TokenResponse> {
-        return ResponseEntity.ok().body(userTokenService.generateRefreshToken())
+    fun generateRefreshToken(
+        @RequestHeader("Refresh-Timeout") refreshTimeout: Long?
+    ): ResponseEntity<TokenResponse> {
+        return ResponseEntity.ok().body(userTokenService.generateRefreshToken(refreshTimeout))
     }
 
 }

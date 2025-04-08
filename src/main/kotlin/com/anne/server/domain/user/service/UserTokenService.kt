@@ -1,6 +1,5 @@
 package com.anne.server.domain.user.service
 
-import com.anne.server.domain.user.domain.User
 import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.domain.user.dto.response.TokenResponse
 import com.anne.server.global.auth.jwt.AuthenticationService
@@ -14,9 +13,9 @@ class UserTokenService (
 
 ) {
 
-    fun generateRefreshToken(): TokenResponse {
+    fun generateRefreshToken(refreshTimeout: Long?): TokenResponse {
         val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
-        return TokenResponse(authenticationService.generateRefreshToken(userDto.id.toString()))
+        return TokenResponse(authenticationService.generateRefreshToken(userDto.id.toString(), refreshTimeout))
     }
 
 }

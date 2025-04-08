@@ -5,11 +5,7 @@ import com.anne.server.domain.user.enums.LoginType
 import com.anne.server.domain.user.service.UserLoginService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/login")
@@ -31,18 +27,22 @@ class UserLoginController (
     @GetMapping("/oauth2/{registrationId}")
     fun getToken(
         @RequestParam code: String,
-        @PathVariable("registrationId") registrationId: String
+        @PathVariable("registrationId") registrationId: String,
+        @RequestHeader("Access-Timeout") accessTimeout: Long?,
+        @RequestHeader("Refresh-Timeout") refreshTimeout: Long?
     ): ResponseEntity<LoginResponse> {
-        return ResponseEntity.ok(userLoginService.login(code, registrationId, LoginType.OAUTH))
+        return ResponseEntity.ok(userLoginService.login(code, registrationId, LoginType.OAUTH, accessTimeout, refreshTimeout))
     }
 
     @Operation(summary = "FedCM 로그인")
     @GetMapping("/fedCM/{registrationId}")
     fun login(
         @RequestParam idToken: String,
-        @PathVariable("registrationId") registrationId: String
+        @PathVariable("registrationId") registrationId: String,
+        @RequestHeader("Access-Timeout") accessTimeout: Long?,
+        @RequestHeader("Refresh-Timeout") refreshTimeout: Long?
     ): ResponseEntity<LoginResponse> {
-        return ResponseEntity.ok(userLoginService.login(idToken, registrationId, LoginType.FEDCM))
+        return ResponseEntity.ok(userLoginService.login(idToken, registrationId, LoginType.FEDCM, accessTimeout, refreshTimeout))
     }
 
 }
