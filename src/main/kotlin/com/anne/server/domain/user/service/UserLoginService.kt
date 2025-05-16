@@ -23,7 +23,7 @@ class UserLoginService (
 
 ) {
 
-    fun login(code: String, registrationId: String, type: LoginType, accessTimeout: Long?, refreshTimeout: Long?): LoginResponse {
+    fun login(code: String, registrationId: String, type: LoginType): LoginResponse {
         val payload = when (type) {
             LoginType.OAUTH -> oAuthService.getPayload(code, registrationId)
             LoginType.FEDCM -> fedCMService.getPayload(code, registrationId)
@@ -45,8 +45,8 @@ class UserLoginService (
 
         return LoginResponse(
             UserDto.fromEntity(user),
-            authenticationService.generateAccessToken(user.id!!.toString(), user.provider, user.uid, accessTimeout),
-            authenticationService.generateRefreshToken(user.id!!.toString(), refreshTimeout)
+            authenticationService.generateAccessToken(user.id!!.toString(), user.provider, user.uid),
+            authenticationService.generateRefreshToken(user.id!!.toString())
         )
     }
 
