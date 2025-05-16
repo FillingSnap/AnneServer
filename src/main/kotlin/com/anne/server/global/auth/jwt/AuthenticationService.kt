@@ -69,12 +69,7 @@ class AuthenticationService (
         }
 
         val user = userService.getUserById(id.toLong())
-        val claims = Jwts.claims()
-            .subject(id)
-            .add(mapOf(Pair("provider", user.provider), Pair("uid", user.uid)))
-            .build()
-
-        return TokenResponse(generateToken(tokenPeriod, claims))
+        return TokenResponse(generateAccessToken(id, user.provider, user.uid))
     }
 
     fun generateToken(period: Long, claims: Claims): String {
