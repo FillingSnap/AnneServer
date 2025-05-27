@@ -7,6 +7,7 @@ import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.global.exception.exceptions.CustomException
 import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.global.logging.wrapper.SseEmitterLoggingWrapper
+import com.anne.server.infra.ai.dao.AiService
 import com.anne.server.infra.discord.BotService
 import com.anne.server.infra.openai.service.OpenAiService
 import jakarta.servlet.http.HttpServletRequest
@@ -30,12 +31,57 @@ class GenerateService (
 
     private val storyService: StoryService,
 
-    private val openAiService: OpenAiService,
+    // private val openAiService: OpenAiService,
 
-    private val botService: BotService
+    private val botService: BotService,
+
+    private val aiService: AiService
 
 ) {
 
+    @Transactional
+    fun generateDiary(delay: Long, uuid: String, request: HttpServletRequest): SseEmitter {
+        val emitter = SseEmitterLoggingWrapper(botService, request)
+
+        if (diaryRepository.existsDiaryByUuid(uuid)) {
+            emitter.completeWithError(CustomException(ErrorCode.ALREADY_EXIST_UUID))
+            return emitter
+        }
+
+        if (!storyRepository.existsStoryByUuid(uuid)) {
+            emitter.completeWithError(CustomException(ErrorCode.STORY_NOT_FOUND))
+            return emitter
+        }
+
+        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
+        val imageTextList = storyService.getImageAndTextByUuid(uuid)
+        var result = ""
+
+        aiService.generateDiary(imageTextList, delay)
+            .doOnNext { response ->
+                result += response
+
+                try {
+                    emitter.send(response)
+                } catch (e : Exception) {}
+            }
+            .doOnError(emitter::completeWithError)
+            .publishOn(Schedulers.boundedElastic())
+            .doOnComplete {
+                diaryService.saveDiary(userDto, result, uuid)
+                try {
+                    emitter.complete(result)
+                } catch (e : Exception) {
+                    emitter.completeWithError(e)
+                    return@doOnComplete
+                }
+            }
+            .subscribe()
+
+        return emitter
+    }
+
+    /*
     @Transactional
     fun generateDiary(delay: Long, uuid: String, request: HttpServletRequest): SseEmitter {
         val emitter = SseEmitterLoggingWrapper(botService, request)
@@ -68,17 +114,25 @@ class GenerateService (
                 }
                 result += content
 
-                emitter.send(content)
+                try {
+                    emitter.send(content)
+                } catch (e : Exception) {}
             }
             .doOnError(emitter::completeWithError)
             .publishOn(Schedulers.boundedElastic())
             .doOnComplete {
-                emitter.complete(result)
                 diaryService.saveDiary(userDto, result, uuid)
+                try {
+                    emitter.complete(result)
+                } catch (e : Exception) {
+                    emitter.completeWithError(e)
+                    return@doOnComplete
+                }
             }
             .subscribe()
 
         return emitter
     }
+     */
 
 }
