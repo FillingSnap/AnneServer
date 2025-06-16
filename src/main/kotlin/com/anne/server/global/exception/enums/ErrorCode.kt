@@ -19,6 +19,7 @@ enum class ErrorCode (
     WRONG_URL(HttpStatus.NOT_FOUND, "잘못된 url 입니다"),
     WRONG_PAGE(HttpStatus.NOT_FOUND, "잘못된 페이지 번호 입니다"),
 
+    TOO_LARGE_MULTIFILE(HttpStatus.BAD_REQUEST, "업로드한 사진의 용량이 너무 큽니다"),
     TOO_MANY_STYLES(HttpStatus.BAD_REQUEST, "일기 스타일의 갯수가 너무 많습니다"),
     ALREADY_EXIST_UUID(HttpStatus.BAD_REQUEST, "이미 존재하는 UUID 입니다"),
     IMAGE_SAVE_ERROR(HttpStatus.BAD_REQUEST, "이미지 업로드 도중 문제가 발생했습니다"),
