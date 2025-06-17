@@ -9,6 +9,7 @@ import com.anne.server.domain.story.dto.response.StoryResponse
 import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.global.exception.exceptions.CustomException
 import com.anne.server.global.exception.enums.ErrorCode
+import com.anne.server.infra.ai.dto.ImageTextDto
 import com.anne.server.infra.amazon.service.S3Service
 import com.anne.server.logger
 import org.springframework.data.repository.findByIdOrNull
@@ -73,7 +74,7 @@ class StoryService(
         for (i in imageList.indices) {
             val image: String = try {
                 s3Service.uploadObject(imageList[i])
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 for (image in savedImageList) {
                     s3Service.deleteObject(image)
                 }
@@ -101,6 +102,19 @@ class StoryService(
         log.info("Story List Updated: {}", diaryDto.uuid)
     }
 
+    @Transactional
+    fun getImageAndTextByUuid(uuid: String): List<ImageTextDto> {
+        val storyList = storyRepository.findAllByUuid(uuid)
+
+        return storyList.map {
+            ImageTextDto(
+                image = it.image,
+                text = it.text
+            )
+        }
+    }
+
+    /*
     @Transactional(readOnly = true)
     fun getResizedImageAndTextByUuid(uuid: String): List<Pair<String, String>> {
         val storyList = storyRepository.findAllByUuid(uuid)
@@ -126,5 +140,6 @@ class StoryService(
 
         return byteArrayOutputStream.toByteArray()
     }
+     */
 
 }

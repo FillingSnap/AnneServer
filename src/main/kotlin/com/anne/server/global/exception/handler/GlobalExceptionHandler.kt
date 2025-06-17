@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
@@ -22,7 +23,7 @@ class GlobalExceptionHandler {
 
     // Custom Exception
     @ExceptionHandler(CustomException::class)
-    fun handlerCustomException(
+    private fun handlerCustomException(
         e: CustomException,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
@@ -37,7 +38,7 @@ class GlobalExceptionHandler {
 
     // Resource Not Found
     @ExceptionHandler(NoResourceFoundException::class)
-    fun handlerNoResourceFoundExceptionHandler(
+    private fun handlerNoResourceFoundExceptionHandler(
         e: NoResourceFoundException,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
@@ -54,7 +55,7 @@ class GlobalExceptionHandler {
 
     // HTTP Not Readable
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    protected fun handlerHttpMessageNotReadableException(
+    private fun handlerHttpMessageNotReadableException(
         e: HttpMessageNotReadableException,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
@@ -68,9 +69,26 @@ class GlobalExceptionHandler {
         )
     }
 
+    // Multifile 용량 제어
+    @ExceptionHandler(MaxUploadSizeExceededException::class)
+    private fun handlerMaxUploadSizeExceededException(
+        e: MaxUploadSizeExceededException,
+        request: HttpServletRequest
+    ): ResponseEntity<ExceptionResponse<String>?> {
+        val errorCode = ErrorCode.TOO_LARGE_MULTIFILE
+
+        return ResponseEntity.status(errorCode.status).body(
+            ExceptionResponse(
+                status = errorCode.status,
+                requestUri = request.requestURI,
+                data = errorCode.message
+            )
+        )
+    }
+
     // 타입 불일치
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
-    protected fun handlerMethodArgumentTypeMismatchException(
+    private fun handlerMethodArgumentTypeMismatchException(
         e: MethodArgumentTypeMismatchException,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<ValidationErrorField>> {
@@ -86,7 +104,7 @@ class GlobalExceptionHandler {
 
     // Validation Error
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    protected fun handlerMethodArgumentNotValidException(
+    private fun handlerMethodArgumentNotValidException(
         e: MethodArgumentNotValidException,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<List<ValidationErrorField>>> {
@@ -103,7 +121,7 @@ class GlobalExceptionHandler {
 
     // 보안용
     @ExceptionHandler(Exception::class)
-    protected fun handlerException(
+    private fun handlerException(
         e: Exception,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {

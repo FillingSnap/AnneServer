@@ -7,12 +7,9 @@ import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.global.exception.exceptions.CustomException
 import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.global.logging.wrapper.SseEmitterLoggingWrapper
+import com.anne.server.infra.ai.dao.AiService
 import com.anne.server.infra.discord.BotService
-import com.anne.server.infra.openai.service.OpenAiService
 import jakarta.servlet.http.HttpServletRequest
-import org.json.simple.JSONArray
-import org.json.simple.JSONObject
-import org.json.simple.parser.JSONParser
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,15 +27,21 @@ class GenerateService (
 
     private val storyService: StoryService,
 
-    private val openAiService: OpenAiService,
+    private val botService: BotService,
 
-    private val botService: BotService
+    private val aiService: AiService
 
 ) {
 
     @Transactional
     fun generateDiary(delay: Long, uuid: String, request: HttpServletRequest): SseEmitter {
         val emitter = SseEmitterLoggingWrapper(botService, request)
+
+        val authentication = SecurityContextHolder.getContext().authentication
+        if (authentication == null || !authentication.isAuthenticated || authentication.principal !is UserDto) {
+            emitter.completeWithError(CustomException(ErrorCode.INVALID_TOKEN))
+            return emitter
+        }
 
         if (diaryRepository.existsDiaryByUuid(uuid)) {
             emitter.completeWithError(CustomException(ErrorCode.ALREADY_EXIST_UUID))
@@ -50,31 +53,26 @@ class GenerateService (
             return emitter
         }
 
-        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
-        val imageTextList = storyService.getResizedImageAndTextByUuid(uuid)
-        var result = ""
+        val userDto = authentication.principal as UserDto
+        val imageTextList = storyService.getImageAndTextByUuid(uuid)
+        val sb = StringBuilder()
 
-        openAiService.generateDiary(imageTextList, delay)
+        aiService.generateDiary(imageTextList, delay)
             .doOnNext { response ->
-                if (response.equals("[DONE]")) {
-                    return@doOnNext
-                }
-                val json = JSONParser().parse(response) as JSONObject
-                val choices = json["choices"] as JSONArray
-                val content = if (choices[0] != null) {
-                    ((choices[0] as JSONObject)["delta"] as JSONObject)["content"] as String? ?: ""
-                } else {
-                    ""
-                }
-                result += content
-
-                emitter.send(content)
+                sb.append(response)
+                try {
+                    emitter.send(response)
+                } catch (_ : Exception) {}
             }
             .doOnError(emitter::completeWithError)
             .publishOn(Schedulers.boundedElastic())
             .doOnComplete {
-                emitter.complete(result)
-                diaryService.saveDiary(userDto, result, uuid)
+                diaryService.saveDiary(userDto, sb.toString(), uuid)
+                try {
+                    emitter.complete(sb.toString())
+                } catch (e : Exception) {
+                    emitter.completeWithError(e)
+                }
             }
             .subscribe()
 

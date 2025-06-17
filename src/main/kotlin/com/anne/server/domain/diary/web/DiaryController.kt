@@ -4,7 +4,6 @@ import com.anne.server.domain.diary.dto.response.DiaryResponse
 import com.anne.server.domain.diary.dto.request.UpdateRequest
 import com.anne.server.domain.diary.service.DiaryService
 import com.anne.server.global.validation.ValidationSequence
-import com.anne.server.domain.diary.dto.response.SseResponse
 import com.anne.server.domain.diary.service.GenerateService
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
@@ -17,7 +16,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
-import reactor.core.publisher.Flux
 
 @RestController
 @RequestMapping("/diary")

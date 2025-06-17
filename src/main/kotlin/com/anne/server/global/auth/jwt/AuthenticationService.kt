@@ -97,7 +97,7 @@ class AuthenticationService (
             return claims.payload
                 .expiration
                 .after(Date())
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -110,7 +110,7 @@ class AuthenticationService (
                 .parseSignedClaims(token)
                 .payload
                 .subject
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             throw CustomException(ErrorCode.INVALID_TOKEN)
         }
     }

@@ -29,22 +29,18 @@ data class SseServerLog (
 
     companion object {
         fun createInstance(
-            request: HttpServletRequest,
+            cached: CachedRequestData,
             elapsedTime: Double,
             sseResponse: SseResponse
         ): SseServerLog {
             return SseServerLog(
-                httpMethod = request.method,
-                requestUri = request.requestURI,
+                httpMethod = cached.method,
+                requestUri = cached.uri,
                 sseStatus = sseResponse.status,
-                clientIp = getClientIpAddr(request),
+                clientIp = cached.clientIp,
                 elapsedTime = elapsedTime,
-                headers = request.headerNames.toList()
-                    .associateWith { request.getHeader(it) }
-                    .toString(),
-                requestParam = request.parameterMap
-                    .map { (key, value) -> "$key=${value.joinToString()}" }
-                    .joinToString("&"),
+                headers = cached.headers.toString(),
+                requestParam = cached.requestParam,
                 sseResult = sseResponse.content
             )
         }
