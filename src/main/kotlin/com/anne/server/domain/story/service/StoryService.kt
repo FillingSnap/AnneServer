@@ -74,7 +74,7 @@ class StoryService(
         for (i in imageList.indices) {
             val image: String = try {
                 s3Service.uploadObject(imageList[i])
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 for (image in savedImageList) {
                     s3Service.deleteObject(image)
                 }
