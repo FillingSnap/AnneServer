@@ -12,6 +12,7 @@ import com.anne.server.infra.discord.BotService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import reactor.core.scheduler.Schedulers
 
@@ -32,8 +33,15 @@ class GenerateService (
 
 ) {
 
+    @Transactional
     fun generateDiary(delay: Long, uuid: String, request: HttpServletRequest): SseEmitter {
         val emitter = SseEmitterLoggingWrapper(botService, request)
+
+        val authentication = SecurityContextHolder.getContext().authentication
+        if (authentication == null || !authentication.isAuthenticated || authentication.principal !is UserDto) {
+            emitter.completeWithError(CustomException(ErrorCode.INVALID_TOKEN))
+            return emitter
+        }
 
         if (diaryRepository.existsDiaryByUuid(uuid)) {
             emitter.completeWithError(CustomException(ErrorCode.ALREADY_EXIST_UUID))
@@ -45,14 +53,13 @@ class GenerateService (
             return emitter
         }
 
-        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
+        val userDto = authentication.principal as UserDto
         val imageTextList = storyService.getImageAndTextByUuid(uuid)
         val sb = StringBuilder()
 
         aiService.generateDiary(imageTextList, delay)
             .doOnNext { response ->
                 sb.append(response)
-                println(response)
                 try {
                     emitter.send(response)
                 } catch (_ : Exception) {}

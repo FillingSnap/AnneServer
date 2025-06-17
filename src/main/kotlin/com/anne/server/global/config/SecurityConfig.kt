@@ -2,7 +2,7 @@ package com.anne.server.global.config
 
 import com.anne.server.global.auth.jwt.AuthenticationEntryPoint
 import com.anne.server.global.auth.jwt.AuthenticationFilter
-import com.anne.server.global.auth.jwt.AuthenticationService
+import com.anne.server.global.auth.jwt.SseAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -13,7 +13,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 class SecurityConfig (
 
-    private val authenticationService: AuthenticationService,
+    private val authenticationFilter: AuthenticationFilter,
+
+    private val sseAuthenticationFilter: SseAuthenticationFilter,
 
     private val authenticationEntryPoint: AuthenticationEntryPoint
 
@@ -28,11 +30,12 @@ class SecurityConfig (
             it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
         .authorizeHttpRequests {
-            it.requestMatchers("/diary/test", "/user/token/refresh", "/error", "/login/oauth2/**", "/login/fedCM/**",
+            it.requestMatchers("/diary/generate", "/user/token/refresh", "/error", "/login/oauth2/**", "/login/fedCM/**",
                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
         }
-        .addFilterBefore(AuthenticationFilter(authenticationService), UsernamePasswordAuthenticationFilter::class.java)
+        .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+        .addFilterAfter(sseAuthenticationFilter, AuthenticationFilter::class.java)
         .exceptionHandling {
             it.authenticationEntryPoint(authenticationEntryPoint)
         }
