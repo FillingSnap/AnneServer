@@ -55,7 +55,7 @@ class GenerateService (
                 println(response)
                 try {
                     emitter.send(response)
-                } catch (e : Exception) {}
+                } catch (_ : Exception) {}
             }
             .doOnError(emitter::completeWithError)
             .publishOn(Schedulers.boundedElastic())

@@ -32,7 +32,7 @@ class S3Service (
             return s3.getObject(GetObjectRequest(bucket, URLDecoder.decode(image.substring(url.length), "UTF-8")))
                 .objectContent
                 .delegateStream
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             throw CustomException(ErrorCode.AWS_S3_ERROR)
         }
     }
@@ -51,7 +51,7 @@ class S3Service (
             s3.putObject(bucket, fileName, file.inputStream, metadata)
 
             return s3.getUrl(bucket, fileName).toString()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             throw CustomException(ErrorCode.AWS_S3_ERROR)
         }
     }
@@ -59,7 +59,7 @@ class S3Service (
     fun deleteObject(image: String) {
         try {
             s3.deleteObject(DeleteObjectRequest(bucket, URLDecoder.decode(image.substring(url.length), "UTF-8")))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             throw CustomException(ErrorCode.AWS_S3_ERROR)
         }
     }
