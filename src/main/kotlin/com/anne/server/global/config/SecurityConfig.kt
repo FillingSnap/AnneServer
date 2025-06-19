@@ -2,7 +2,6 @@ package com.anne.server.global.config
 
 import com.anne.server.global.auth.jwt.AuthenticationEntryPoint
 import com.anne.server.global.auth.jwt.AuthenticationFilter
-import com.anne.server.global.auth.jwt.SseAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -14,8 +13,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfig (
 
     private val authenticationFilter: AuthenticationFilter,
-
-    private val sseAuthenticationFilter: SseAuthenticationFilter,
 
     private val authenticationEntryPoint: AuthenticationEntryPoint
 
@@ -35,7 +32,6 @@ class SecurityConfig (
                 .anyRequest().authenticated()
         }
         .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
-        .addFilterAfter(sseAuthenticationFilter, AuthenticationFilter::class.java)
         .exceptionHandling {
             it.authenticationEntryPoint(authenticationEntryPoint)
         }
