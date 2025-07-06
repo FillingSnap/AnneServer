@@ -27,6 +27,8 @@ class S3Service (
 
     private val url = "https://$bucket.s3.ap-northeast-2.amazonaws.com/"
 
+    private val extList = listOf("png", "jpg", "jpeg")
+
     fun getObject(image: String): InputStream {
         try {
             return s3.getObject(GetObjectRequest(bucket, URLDecoder.decode(image.substring(url.length), "UTF-8")))
@@ -42,6 +44,11 @@ class S3Service (
 
         val originalFileName = file.originalFilename!!
         val ext = originalFileName.substring(originalFileName.lastIndexOf(".") + 1)
+
+        if (ext !in extList) {
+            throw CustomException(ErrorCode.WRONG_IMAGE_EXTENSION)
+        }
+
         val fileName = UserDto.toEntity(userDto).id!!.toString() + "/" + LocalDateTime.now().toString() + "." + ext
         val metadata = ObjectMetadata()
         metadata.contentLength = file.size
