@@ -20,5 +20,4 @@ RUN --mount=type=cache,target=/gradle \
 FROM eclipse-temurin:17-jre AS run
 WORKDIR /app
 COPY --from=build /build/build/libs/*.jar /app/app.jar
-ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILE}
 ENTRYPOINT ["java","-jar","/app/app.jar"]
