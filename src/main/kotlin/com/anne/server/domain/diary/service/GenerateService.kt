@@ -62,7 +62,10 @@ class GenerateService (
 
     @Transactional
     fun generateDiary(delay: Long, uuid: String, request: HttpServletRequest): SseEmitter {
-        val emitter = sseRegistry.register(uuid, SseEmitterLoggingWrapper(botService, request)) as SseEmitterLoggingWrapper
+        val emitter = sseRegistry.register(
+            uuid,
+            SseEmitterLoggingWrapper(botService, request)
+        ) as SseEmitterLoggingWrapper
 
         if (diaryRepository.existsDiaryByUuid(uuid)) {
             emitter.completeWithError(CustomException(ErrorCode.ALREADY_EXIST_UUID))
