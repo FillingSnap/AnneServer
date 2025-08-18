@@ -6,7 +6,6 @@ enum class LoginType (
 
 ) {
 
-    OAUTH("oauth"),
     FEDCM("fedCM")
     ;
 

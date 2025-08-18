@@ -13,6 +13,7 @@ enum class ErrorCode (
     WRONG_REGISTRATION_ID(HttpStatus.UNAUTHORIZED, "잘못된 인증 제공자입니다"),
     GOOGLE_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "구글로부터 회원 정보를 받아올 수 없습니다"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다"),
+
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다"),
     STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "스토리를 찾을 수 없습니다"),
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "일기를 찾을 수 없습니다"),
@@ -29,8 +30,8 @@ enum class ErrorCode (
     NOT_YOUR_STORY(HttpStatus.BAD_REQUEST, "해당 스토리의 소유자가 아닙니다"),
     NOT_YOUR_DIARY(HttpStatus.BAD_REQUEST, "해당 일기의 소유자가 아닙니다"),
 
-    CHAT_GPT_IMAGE_ANALYZE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Chat GPT에서 이미지를 분석하는 데에 실패하였습니다"),
-    AWS_S3_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AWS S3에서 에러가 발생했습니다")
+    AWS_S3_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AWS S3에서 에러가 발생했습니다"),
+    DIARY_GENERATE_UNAVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "일기를 생성할 수 없습니다")
     ;
 
 }
