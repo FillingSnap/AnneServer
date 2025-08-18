@@ -12,7 +12,10 @@ import java.time.Duration
 class AiService (
 
     @Value("\${ai.url}")
-    private val url: String
+    private val url: String,
+
+    @Value("\${ai.test-url}")
+    private val testUrl: String
 
 ) {
 
@@ -21,6 +24,19 @@ class AiService (
         val eventStream = client.post()
             .header("Content-Type", "application/json")
             .bodyValue(imageTextList)
+            .accept(MediaType.TEXT_EVENT_STREAM)
+            .exchangeToFlux { response ->
+                response.bodyToFlux(String::class.java)
+            }
+            .delayElements(Duration.ofMillis(delay))
+
+        return eventStream
+    }
+
+    fun test(delay: Long): Flux<String> {
+        val client = WebClient.create(testUrl)
+        val eventStream = client.post()
+            .header("Content-Type", "application/json")
             .accept(MediaType.TEXT_EVENT_STREAM)
             .exchangeToFlux { response ->
                 response.bodyToFlux(String::class.java)

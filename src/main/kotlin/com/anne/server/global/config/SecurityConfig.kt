@@ -2,6 +2,7 @@ package com.anne.server.global.config
 
 import com.anne.server.global.auth.jwt.AuthenticationEntryPoint
 import com.anne.server.global.auth.jwt.AuthenticationFilter
+import jakarta.servlet.DispatcherType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -27,8 +28,9 @@ class SecurityConfig (
             it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
         .authorizeHttpRequests {
-            it.requestMatchers("/diary/generate", "/user/token/refresh", "/error", "/login/oauth2/**", "/login/fedCM/**",
+            it.requestMatchers("/internal/drain/**", "/user/token/refresh", "/error", "/login/fedCM/**",
                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                 .anyRequest().authenticated()
         }
         .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
