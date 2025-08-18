@@ -23,7 +23,7 @@ class LoggingFilter (
     private final val log = logger()
 
     private final val exceptUri = listOf(
-        "/swagger-ui/**", "/v3/api-docs/**", "/diary/generate"
+        "/swagger-ui/**", "/v3/api-docs/**", "/diary/generate", "/internal/**"
     )
 
     override fun doFilterInternal(

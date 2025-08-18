@@ -7,6 +7,7 @@ import com.anne.server.domain.user.dto.UserDto
 import com.anne.server.global.exception.exceptions.CustomException
 import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.global.logging.wrapper.SseEmitterLoggingWrapper
+import com.anne.server.global.registry.SseRegistry
 import com.anne.server.infra.ai.dao.AiService
 import com.anne.server.infra.discord.BotService
 import jakarta.servlet.http.HttpServletRequest
@@ -29,19 +30,39 @@ class GenerateService (
 
     private val botService: BotService,
 
-    private val aiService: AiService
+    private val aiService: AiService,
+
+    private val sseRegistry: SseRegistry
 
 ) {
 
+    fun test(delay: Long, uuid: String, request: HttpServletRequest): SseEmitter {
+        val emitter = sseRegistry.register(uuid, SseEmitterLoggingWrapper(botService, request)) as SseEmitterLoggingWrapper
+        val sb = StringBuilder()
+        aiService.test(delay)
+            .doOnNext { response ->
+                sb.append(response)
+                try {
+                    emitter.send(response)
+                } catch (_ : Exception) {}
+            }
+            .doOnError(emitter::completeWithError)
+            .publishOn(Schedulers.boundedElastic())
+            .doOnComplete {
+                try {
+                    emitter.complete(sb.toString())
+                } catch (e : Exception) {
+                    emitter.completeWithError(e)
+                }
+            }
+            .subscribe()
+
+        return emitter
+    }
+
     @Transactional
     fun generateDiary(delay: Long, uuid: String, request: HttpServletRequest): SseEmitter {
-        val emitter = SseEmitterLoggingWrapper(botService, request)
-
-        val authentication = SecurityContextHolder.getContext().authentication
-        if (authentication == null || !authentication.isAuthenticated || authentication.principal !is UserDto) {
-            emitter.completeWithError(CustomException(ErrorCode.INVALID_TOKEN))
-            return emitter
-        }
+        val emitter = sseRegistry.register(uuid, SseEmitterLoggingWrapper(botService, request)) as SseEmitterLoggingWrapper
 
         if (diaryRepository.existsDiaryByUuid(uuid)) {
             emitter.completeWithError(CustomException(ErrorCode.ALREADY_EXIST_UUID))
@@ -53,7 +74,7 @@ class GenerateService (
             return emitter
         }
 
-        val userDto = authentication.principal as UserDto
+        val userDto = SecurityContextHolder.getContext().authentication.principal as UserDto
         val imageTextList = storyService.getImageAndTextByUuid(uuid)
         val sb = StringBuilder()
 

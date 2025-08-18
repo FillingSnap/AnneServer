@@ -19,23 +19,6 @@ class UserLoginController (
 
 ) {
 
-    @Operation(summary = "OAuth2 코드 발급(리다이렉트)")
-    @GetMapping("/oauth2/code")
-    fun getCodeRedirect(
-        @RequestParam code: String
-    ): ResponseEntity<String> {
-        return ResponseEntity.ok(code)
-    }
-
-    @Operation(summary = "OAuth2 로그인")
-    @GetMapping("/oauth2/{registrationId}")
-    fun getToken(
-        @RequestParam code: String,
-        @PathVariable("registrationId") registrationId: String
-    ): ResponseEntity<LoginResponse> {
-        return ResponseEntity.ok(userLoginService.login(code, registrationId, LoginType.OAUTH))
-    }
-
     @Operation(summary = "FedCM 로그인")
     @GetMapping("/fedCM/{registrationId}")
     fun login(

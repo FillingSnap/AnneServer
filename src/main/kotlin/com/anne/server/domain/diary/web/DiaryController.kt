@@ -5,6 +5,9 @@ import com.anne.server.domain.diary.dto.request.UpdateRequest
 import com.anne.server.domain.diary.service.DiaryService
 import com.anne.server.global.validation.ValidationSequence
 import com.anne.server.domain.diary.service.GenerateService
+import com.anne.server.global.config.DrainFlag
+import com.anne.server.global.exception.enums.ErrorCode
+import com.anne.server.global.exception.exceptions.CustomException
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
@@ -23,7 +26,9 @@ class DiaryController (
 
     private val diaryService: DiaryService,
 
-    private val generateService: GenerateService
+    private val generateService: GenerateService,
+
+    private val drainFlag: DrainFlag
 
 ) {
 
@@ -36,7 +41,27 @@ class DiaryController (
         @RequestBody uuid: String,
         request: HttpServletRequest
     ): ResponseEntity<SseEmitter> {
-        return ResponseEntity.ok().body(generateService.generateDiary(delay, uuid, request))
+        if (!drainFlag.acceptNew.get()) {
+            throw CustomException(ErrorCode.DIARY_GENERATE_UNAVAILABLE)
+        }
+
+        return ResponseEntity.ok().body(generateService.test(delay, uuid, request))
+    }
+
+    @Operation(summary = "일기 생성 테스트")
+    @PostMapping(
+        value = ["/generateTest"],
+        produces = [MediaType.TEXT_EVENT_STREAM_VALUE]
+    ) fun generateDiaryTest(
+        @RequestParam delay: Long,
+        @RequestBody uuid: String,
+        request: HttpServletRequest
+    ): ResponseEntity<SseEmitter> {
+        if (!drainFlag.acceptNew.get()) {
+            throw CustomException(ErrorCode.DIARY_GENERATE_UNAVAILABLE)
+        }
+
+        return ResponseEntity.ok().body(generateService.test(delay, uuid, request))
     }
 
     @Operation(summary = "일기 전체 조회")

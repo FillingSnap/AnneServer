@@ -7,13 +7,10 @@ import com.anne.server.domain.user.dto.response.LoginResponse
 import com.anne.server.domain.user.enums.LoginType
 import com.anne.server.global.auth.fedCM.FedCMService
 import com.anne.server.global.auth.jwt.AuthenticationService
-import com.anne.server.global.auth.oauth.OAuthService
 import org.springframework.stereotype.Service
 
 @Service
 class UserLoginService (
-
-    private val oAuthService: OAuthService,
 
     private val fedCMService: FedCMService,
 
@@ -25,7 +22,6 @@ class UserLoginService (
 
     fun login(code: String, registrationId: String, type: LoginType): LoginResponse {
         val payload = when (type) {
-            LoginType.OAUTH -> oAuthService.getPayload(code, registrationId)
             LoginType.FEDCM -> fedCMService.getPayload(code, registrationId)
         }
 

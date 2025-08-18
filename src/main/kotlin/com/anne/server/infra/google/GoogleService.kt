@@ -13,7 +13,7 @@ import java.util.*
 @Service
 class GoogleService (
 
-    @Value("\${oauth2.google.client-id}")
+    @Value("\${google.client-id}")
     private val clientId: String
 
 ) {
@@ -29,7 +29,7 @@ class GoogleService (
 
         val token = try {
             verifier.verify(idToken)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             throw CustomException(ErrorCode.GOOGLE_UNAUTHORIZED)
         }
 
