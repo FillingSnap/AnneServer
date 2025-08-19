@@ -37,12 +37,4 @@ class SseRegistry {
 
     fun count() = openCount.sum().toInt()
 
-    fun drainNoticeOnly() {
-        emitterMap.values.forEach { e ->
-            try {
-                e.send(SseEmitter.event().name("server_draining").data("new connections disabled"))
-            } catch (_: Exception) {}
-        }
-    }
-
 }

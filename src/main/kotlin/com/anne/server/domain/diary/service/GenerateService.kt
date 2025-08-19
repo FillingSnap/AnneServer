@@ -10,7 +10,6 @@ import com.anne.server.global.logging.wrapper.SseEmitterLoggingWrapper
 import com.anne.server.global.registry.SseRegistry
 import com.anne.server.infra.ai.dao.AiService
 import com.anne.server.infra.discord.BotService
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -36,33 +35,25 @@ class GenerateService (
 
 ) {
 
-    fun test(delay: Long, uuid: String, request: HttpServletRequest): SseEmitter {
-        val emitter = sseRegistry.register(uuid, SseEmitterLoggingWrapper(botService, request)) as SseEmitterLoggingWrapper
+    fun test(delay: Long, uuid: String): SseEmitter {
+        val emitter = sseRegistry.register(uuid, SseEmitterLoggingWrapper(botService)) as SseEmitterLoggingWrapper
         val sb = StringBuilder()
         aiService.test(delay)
-            .doOnNext { response ->
-                sb.append(response)
-                try {
-                    emitter.send(response)
-                } catch (_ : Exception) {}
-            }
-            .doOnError(emitter::completeWithError)
             .publishOn(Schedulers.boundedElastic())
-            .doOnComplete {
-                try {
-                    emitter.complete(sb.toString())
-                } catch (e : Exception) {
-                    emitter.completeWithError(e)
-                }
-            }
+            .doOnNext { response -> sb.append(response); emitter.send(response) }
+            .doOnError(emitter::completeWithError)
+            .doOnComplete { emitter.complete(sb.toString()) }
             .subscribe()
 
         return emitter
     }
 
     @Transactional
-    fun generateDiary(delay: Long, uuid: String, request: HttpServletRequest): SseEmitter {
-        val emitter = sseRegistry.register(uuid, SseEmitterLoggingWrapper(botService, request)) as SseEmitterLoggingWrapper
+    fun generateDiary(delay: Long, uuid: String): SseEmitter {
+        val emitter = sseRegistry.register(
+            uuid,
+            SseEmitterLoggingWrapper(botService)
+        ) as SseEmitterLoggingWrapper
 
         if (diaryRepository.existsDiaryByUuid(uuid)) {
             emitter.completeWithError(CustomException(ErrorCode.ALREADY_EXIST_UUID))
@@ -79,6 +70,7 @@ class GenerateService (
         val sb = StringBuilder()
 
         aiService.generateDiary(imageTextList, delay)
+            .publishOn(Schedulers.boundedElastic())
             .doOnNext { response ->
                 sb.append(response)
                 try {
@@ -86,7 +78,6 @@ class GenerateService (
                 } catch (_ : Exception) {}
             }
             .doOnError(emitter::completeWithError)
-            .publishOn(Schedulers.boundedElastic())
             .doOnComplete {
                 diaryService.saveDiary(userDto, sb.toString(), uuid)
                 try {

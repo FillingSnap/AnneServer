@@ -9,7 +9,6 @@ import com.anne.server.global.config.DrainFlag
 import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.global.exception.exceptions.CustomException
 import io.swagger.v3.oas.annotations.Operation
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -39,13 +38,12 @@ class DiaryController (
     ) fun generateDiary(
         @RequestParam delay: Long,
         @RequestBody uuid: String,
-        request: HttpServletRequest
     ): ResponseEntity<SseEmitter> {
         if (!drainFlag.acceptNew.get()) {
             throw CustomException(ErrorCode.DIARY_GENERATE_UNAVAILABLE)
         }
 
-        return ResponseEntity.ok().body(generateService.test(delay, uuid, request))
+        return ResponseEntity.ok().body(generateService.generateDiary(delay, uuid))
     }
 
     @Operation(summary = "일기 생성 테스트")
@@ -55,13 +53,12 @@ class DiaryController (
     ) fun generateDiaryTest(
         @RequestParam delay: Long,
         @RequestBody uuid: String,
-        request: HttpServletRequest
     ): ResponseEntity<SseEmitter> {
         if (!drainFlag.acceptNew.get()) {
             throw CustomException(ErrorCode.DIARY_GENERATE_UNAVAILABLE)
         }
 
-        return ResponseEntity.ok().body(generateService.test(delay, uuid, request))
+        return ResponseEntity.ok().body(generateService.test(delay, uuid))
     }
 
     @Operation(summary = "일기 전체 조회")

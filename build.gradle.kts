@@ -59,6 +59,8 @@ dependencies {
 
     implementation("net.dv8tion:JDA:5.2.2")
 
+    implementation("io.micrometer:context-propagation:1.2.0-M1")
+
     runtimeOnly("com.mysql:mysql-connector-j:8.3.0")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.2")

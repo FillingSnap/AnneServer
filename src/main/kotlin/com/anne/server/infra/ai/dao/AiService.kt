@@ -1,6 +1,7 @@
 package com.anne.server.infra.ai.dao
 
 import com.anne.server.infra.ai.dto.ImageTextDto
+import io.micrometer.context.ContextSnapshotFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -15,9 +16,16 @@ class AiService (
     private val url: String,
 
     @Value("\${ai.test-url}")
-    private val testUrl: String
+    private val testUrl: String,
+
+    private val contextSnapshotFactory: ContextSnapshotFactory
 
 ) {
+
+    fun <T> Flux<T>.withMdc(snapshotFactory: ContextSnapshotFactory): Flux<T> {
+        val snap = snapshotFactory.captureAll()
+        return this.contextWrite { ctx -> snap.updateContext(ctx) }
+    }
 
     fun generateDiary(imageTextList: List<ImageTextDto>, delay: Long): Flux<String> {
         val client = WebClient.create(url)
@@ -29,6 +37,7 @@ class AiService (
                 response.bodyToFlux(String::class.java)
             }
             .delayElements(Duration.ofMillis(delay))
+            .withMdc(contextSnapshotFactory)
 
         return eventStream
     }
@@ -42,6 +51,7 @@ class AiService (
                 response.bodyToFlux(String::class.java)
             }
             .delayElements(Duration.ofMillis(delay))
+            .withMdc(contextSnapshotFactory)
 
         return eventStream
     }
