@@ -31,7 +31,7 @@ class SecurityConfig (
             it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
         .authorizeHttpRequests {
-            it.requestMatchers("/internal/**", "/user/token/refresh", "/error", "/login/fedCM/**",
+            it.requestMatchers("/", "/internal/**", "/user/token/refresh", "/error", "/login/fedCM/**",
                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                 .anyRequest().authenticated()
