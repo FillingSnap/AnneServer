@@ -2,139 +2,78 @@ package com.anne.server.global.logging.wrapper
 
 import com.anne.server.domain.diary.dto.response.SseResponse
 import com.anne.server.domain.diary.enums.SseStatus
-import com.anne.server.global.logging.dto.CachedRequestData
 import com.anne.server.infra.discord.BotService
 import com.anne.server.logger
-import jakarta.servlet.http.HttpServletRequest
 import net.dv8tion.jda.api.EmbedBuilder
 import org.slf4j.MDC
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
-import org.springframework.web.util.ContentCachingRequestWrapper
 import java.awt.Color
 
 class SseEmitterLoggingWrapper (
 
     private val botService: BotService,
 
-    request: HttpServletRequest
-
 ): SseEmitter(5 * 60 * 1000) {
 
-    private val startTime = System.currentTimeMillis()
-
-    private val cachedRequestData: CachedRequestData
-
-    private val mdcBase = MDC.getCopyOfContextMap()
-
-    init {
-        val wrapper = ContentCachingRequestWrapper(request)
-        val headers = wrapper.headerNames.asSequence()
-            .associateWith { wrapper.getHeader(it) ?: "" }
-        val paramString = wrapper.parameterMap
-            .map { (key, value) -> "$key=${value.joinToString()}" }
-            .joinToString("&")
-
-        cachedRequestData = CachedRequestData(
-            method = wrapper.method,
-            uri = wrapper.requestURI,
-            clientIp = getClientIpAddr(wrapper),
-            headers = headers,
-            requestParam = paramString
-        )
-    }
-
-    private fun getClientIpAddr(request: HttpServletRequest): String {
-        var ip = request.getHeader("X-Forwarded-For")
-
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.getHeader("Proxy-Client-IP")
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.getHeader("WL-Proxy-Client-IP")
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.getHeader("HTTP_CLIENT_IP")
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR")
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equals(ip, ignoreCase = true)) {
-            ip = request.remoteAddr
-        }
-
-        return ip
-    }
-
     private val log = logger()
+    private val startTime = System.currentTimeMillis()
+    private val mdcBase: Map<String, String>? = MDC.getCopyOfContextMap()
 
     private inline fun <T> withMdc(block: () -> T): T {
         val prev = MDC.getCopyOfContextMap()
         try {
-            if (mdcBase != null) MDC.setContextMap(mdcBase)
+            if (mdcBase != null) MDC.setContextMap(mdcBase) else MDC.clear()
             return block()
         } finally {
-            if (prev != null) MDC.setContextMap(prev)
+            if (prev != null) MDC.setContextMap(prev) else MDC.clear()
         }
     }
 
     override fun send(event: Any) = withMdc {
-        val sseResponse = SseResponse(
-            status = SseStatus.SUCCESS,
-            content = event as String
-        )
-        super.send(sseResponse)
+        val content = event.toString()
+        try {
+            super.send(SseResponse(status = SseStatus.SUCCESS, content = content))
+        } catch (_: Throwable) {}
+        log.debug("SSE send: {}", content.take(256))
     }
 
     fun complete(result: String) = withMdc {
-        val endTime = System.currentTimeMillis()
-
-        val sseResponse = SseResponse(
-            status = SseStatus.EOF,
-            content = result
-        )
-
-        val elapsedTime = (endTime - startTime) / 1000.0
-
+        val sseResponse = SseResponse(status = SseStatus.EOF, content = result)
+        try {
+            super.send(sseResponse)
+            super.complete()
+        } catch (_: Throwable) {}
+        val elapsed = (System.currentTimeMillis() - startTime) / 1000.0
         log.info("""
             |
-            |[SSE RESPONSE] ${elapsedTime}s
-            |>> RESPONSE: $sseResponse
-        """.trimIndent())
-        super.send(sseResponse)
-        super.complete()
+            |[SSE RESPONSE] ${"%.3f".format(elapsed)}s
+            |>> RESPONSE: SseResponse(status=${sseResponse.status}, content=${sseResponse.content?.take(1000)})
+        """.trimMargin())
     }
 
     override fun completeWithError(ex: Throwable) = withMdc {
-        val endTime = System.currentTimeMillis()
-
-        val sseResponse = SseResponse(
-            status = SseStatus.ERROR,
-            content = ex.message
-        )
-
-        val elapsedTime = (endTime - startTime) / 1000.0
-
+        val sseResponse = SseResponse(status = SseStatus.ERROR, content = ex.message ?: ex.javaClass.simpleName)
+        try {
+            super.send(sseResponse)
+            super.complete()
+        } catch (_: Throwable) {}
+        val elapsed = (System.currentTimeMillis() - startTime) / 1000.0
         log.error("""
             |
-            |[SSE RESPONSE] ${elapsedTime}s
-            |>> RESPONSE: $sseResponse
-        """.trimIndent())
+            |[SSE RESPONSE] ${"%.3f".format(elapsed)}s
+            |>> RESPONSE: SseResponse(status=${sseResponse.status}, content=${sseResponse.content?.take(1000)})
+        """.trimMargin())
         botService.sendMessage("Error",
             EmbedBuilder()
                 .setTitle("[SERVER LOG] Error Notification")
                 .setColor(Color.RED)
-                .addField("Request Method & URI", "[${cachedRequestData.method}] ${cachedRequestData.uri}", false)
-                .addField("SSE Status", "${sseResponse.status}", true)
-                .addField("Elapsed Time", "$elapsedTime", true)
-                .addField("Client IP", cachedRequestData.clientIp, false)
-                .addField("Headers", cachedRequestData.headers.toString(), false)
-                .addField("Request Params", cachedRequestData.requestParam.take(1000), false)
+                .addField("Request Id", MDC.get("requestId"), false)
+                .addField("Elapsed Time", "${elapsed}s", true)
+                .addField("SSE Status", sseResponse.status.toString(), false)
                 .addField("SSE Result", sseResponse.content.toString(), false)
                 .setTimestamp(java.time.OffsetDateTime.now())
                 .build()
         )
-        super.send(sseResponse)
-        super.complete()
     }
 
 }
