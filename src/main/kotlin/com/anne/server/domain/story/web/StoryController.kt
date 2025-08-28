@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@RequestMapping("/story")
+@RequestMapping("/api/story")
 class StoryController (
 
     private val storyService: StoryService

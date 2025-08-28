@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/login")
+@RequestMapping("/api/login")
 class UserLoginController (
 
     private val userLoginService: UserLoginService

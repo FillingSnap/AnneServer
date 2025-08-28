@@ -31,10 +31,11 @@ class SecurityConfig (
             it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
         .authorizeHttpRequests {
-            it.requestMatchers("/", "/internal/**", "/user/token/refresh", "/error", "/login/fedCM/**",
-                "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+            it.requestMatchers("/api/healthCheck", "/api/internal/**",
+                "/api/user/token/refresh", "/api/login/fedCM/**",
+                "/error", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/**").authenticated()
                 .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
-                .anyRequest().authenticated()
         }
         .addFilterBefore(internalTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
         .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
