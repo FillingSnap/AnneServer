@@ -105,22 +105,25 @@ class LoggingFilter (
                         |[RESPONSE] ${responseWrapper.status} ${elapsedTime}s
                         |>> RESPONSE_BODY: $responseBody
                     """.trimIndent())
-                    botService.sendMessage("Error",
-                        EmbedBuilder()
-                            .setTitle("[SERVER LOG] Error Notification")
-                            .setColor(Color.RED)
-                            .addField("Request Method & URI", "[$method] $requestUri", false)
-                            .addField("Request Id", clientIp, false)
-                            .addField("HTTP Status", httpStatus.toString(), true)
-                            .addField("Elapsed Time", "${elapsedTime}s", true)
-                            .addField("Client IP", clientIp, false)
-                            .addField("Headers", headers, false)
-                            .addField("Request Params", params.take(1000), false)
-                            .addField("Request Body", requestBody.take(500), false)
-                            .addField("Response Body", responseBody.take(500), false)
-                            .setTimestamp(java.time.OffsetDateTime.now())
-                            .build()
-                    )
+                    if (httpStatus != HttpStatus.NOT_FOUND) {
+                        botService.sendMessage(
+                            "Error",
+                            EmbedBuilder()
+                                .setTitle("[SERVER LOG] Error Notification")
+                                .setColor(Color.RED)
+                                .addField("Request Method & URI", "[$method] $requestUri", false)
+                                .addField("Request Id", clientIp, false)
+                                .addField("HTTP Status", httpStatus.toString(), true)
+                                .addField("Elapsed Time", "${elapsedTime}s", true)
+                                .addField("Client IP", clientIp, false)
+                                .addField("Headers", headers, false)
+                                .addField("Request Params", params.take(1000), false)
+                                .addField("Request Body", requestBody.take(500), false)
+                                .addField("Response Body", responseBody.take(500), false)
+                                .setTimestamp(java.time.OffsetDateTime.now())
+                                .build()
+                        )
+                    }
                 }
             }
         } finally {

@@ -24,23 +24,22 @@ class SecurityConfig (
 
     @Bean
     fun filterChain(http: HttpSecurity) = http
-        .csrf {
-            it.disable()
-        }
-        .sessionManagement {
-            it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        }
+        .securityMatcher("/api/**")
+        .csrf { it.disable() }
+        .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
         .authorizeHttpRequests {
-            it.requestMatchers("/", "/internal/**", "/user/token/refresh", "/error", "/login/fedCM/**",
-                "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
+            it.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
+                .requestMatchers(
+                    "/api/healthCheck",
+                    "/api/internal/**",
+                    "/api/user/token/refresh",
+                    "/api/login/fedCM/**"
+                ).permitAll()
                 .anyRequest().authenticated()
         }
         .addFilterBefore(internalTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
         .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
-        .exceptionHandling {
-            it.authenticationEntryPoint(authenticationEntryPoint)
-        }
+        .exceptionHandling { it.authenticationEntryPoint(authenticationEntryPoint) }
         .build()!!
 
 }
