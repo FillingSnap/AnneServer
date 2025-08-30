@@ -105,7 +105,8 @@ class LoggingFilter (
                         |[RESPONSE] ${responseWrapper.status} ${elapsedTime}s
                         |>> RESPONSE_BODY: $responseBody
                     """.trimIndent())
-                    if (httpStatus != HttpStatus.NOT_FOUND) {
+                    val alert = MDC.get("alert")
+                    if (alert == null || alert.toBoolean()) {
                         botService.sendMessage(
                             "Error",
                             EmbedBuilder()

@@ -6,6 +6,7 @@ import com.anne.server.global.exception.exceptions.CustomException
 import com.anne.server.global.validation.dto.ValidationErrorField
 import com.anne.server.logger
 import jakarta.servlet.http.HttpServletRequest
+import org.slf4j.MDC
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -27,6 +28,8 @@ class GlobalExceptionHandler {
         e: CustomException,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
+        MDC.put("alert", e.errorCode.alert.toString())
+
         return ResponseEntity.status(e.errorCode.status).body(
             ExceptionResponse(
                 status = e.errorCode.status,
@@ -43,6 +46,7 @@ class GlobalExceptionHandler {
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
         val errorCode = ErrorCode.WRONG_URL
+        MDC.put("alert", errorCode.alert.toString())
 
         return ResponseEntity.status(errorCode.status).body(
             ExceptionResponse(
@@ -59,6 +63,7 @@ class GlobalExceptionHandler {
         e: HttpMessageNotReadableException,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<String>> {
+        MDC.put("alert", false.toString())
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ExceptionResponse(
@@ -92,7 +97,6 @@ class GlobalExceptionHandler {
         e: MethodArgumentTypeMismatchException,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<ValidationErrorField>> {
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ExceptionResponse(
                 status = HttpStatus.BAD_REQUEST,
