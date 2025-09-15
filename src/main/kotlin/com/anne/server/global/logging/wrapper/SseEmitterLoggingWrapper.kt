@@ -2,6 +2,7 @@ package com.anne.server.global.logging.wrapper
 
 import com.anne.server.domain.diary.dto.response.SseResponse
 import com.anne.server.domain.diary.enums.SseStatus
+import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.infra.discord.BotService
 import com.anne.server.logger
 import net.dv8tion.jda.api.EmbedBuilder
@@ -52,7 +53,7 @@ class SseEmitterLoggingWrapper (
     }
 
     override fun completeWithError(ex: Throwable) = withMdc {
-        val sseResponse = SseResponse(status = SseStatus.ERROR, content = ex.message ?: ex.javaClass.simpleName)
+        val sseResponse = SseResponse(status = SseStatus.ERROR, content = ErrorCode.DIARY_GENERATE_UNAVAILABLE.message)
         try {
             super.send(sseResponse)
             super.complete()

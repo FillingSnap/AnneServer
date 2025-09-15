@@ -29,11 +29,11 @@ class LoggingFilter (
     private final val log = logger()
 
     private final val exceptUri = listOf(
-        "/swagger-ui/**", "/v3/api-docs/**", "/internal/**"
+        "/swagger-ui/**", "/v3/api-docs/**", "/api/internal/**"
     )
 
     private final val sseUri = listOf(
-        "/diary/generate", "/diary/generateTest"
+        "/api/diary/generate", "/api/diary/generateTest"
     )
 
     private val attrReqId = "mdc.reqId"
