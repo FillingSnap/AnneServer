@@ -39,6 +39,13 @@ class GenerateService (
         val emitter = sseRegistry.register(uuid, SseEmitterLoggingWrapper(botService)) as SseEmitterLoggingWrapper
         val sb = StringBuilder()
         aiService.test(delay)
+            .handle { sse, sink ->
+                if (sse.error) {
+                    sink.error(RuntimeException(sse.message))
+                } else {
+                    sink.next(sse.message)
+                }
+            }
             .publishOn(Schedulers.boundedElastic())
             .doOnNext { response -> sb.append(response); emitter.send(response) }
             .doOnError(emitter::completeWithError)
@@ -70,6 +77,13 @@ class GenerateService (
         val sb = StringBuilder()
 
         aiService.generateDiary(imageTextList, delay)
+            .handle { sse, sink ->
+                if (sse.error) {
+                    sink.error(RuntimeException(sse.message))
+                } else {
+                    sink.next(sse.message)
+                }
+            }
             .publishOn(Schedulers.boundedElastic())
             .doOnNext { response ->
                 sb.append(response)

@@ -1,6 +1,7 @@
 package com.anne.server.infra.ai.dao
 
 import com.anne.server.infra.ai.dto.ImageTextDto
+import com.anne.server.infra.ai.dto.ServerSentEvent
 import io.micrometer.context.ContextSnapshotFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -27,14 +28,14 @@ class AiService (
         return this.contextWrite { ctx -> snap.updateContext(ctx) }
     }
 
-    fun generateDiary(imageTextList: List<ImageTextDto>, delay: Long): Flux<String> {
+    fun generateDiary(imageTextList: List<ImageTextDto>, delay: Long): Flux<ServerSentEvent> {
         val client = WebClient.create(url)
         val eventStream = client.post()
             .header("Content-Type", "application/json")
             .bodyValue(imageTextList)
             .accept(MediaType.TEXT_EVENT_STREAM)
             .exchangeToFlux { response ->
-                response.bodyToFlux(String::class.java)
+                response.bodyToFlux(ServerSentEvent::class.java)
             }
             .delayElements(Duration.ofMillis(delay))
             .withMdc(contextSnapshotFactory)
@@ -42,13 +43,13 @@ class AiService (
         return eventStream
     }
 
-    fun test(delay: Long): Flux<String> {
+    fun test(delay: Long): Flux<ServerSentEvent> {
         val client = WebClient.create(testUrl)
         val eventStream = client.post()
             .header("Content-Type", "application/json")
             .accept(MediaType.TEXT_EVENT_STREAM)
             .exchangeToFlux { response ->
-                response.bodyToFlux(String::class.java)
+                response.bodyToFlux(ServerSentEvent::class.java)
             }
             .delayElements(Duration.ofMillis(delay))
             .withMdc(contextSnapshotFactory)
