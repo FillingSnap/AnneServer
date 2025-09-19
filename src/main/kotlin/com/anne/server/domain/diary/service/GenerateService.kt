@@ -48,7 +48,7 @@ class GenerateService (
     private val log = logger()
 
     fun test(delay: Long, uuid: String): SseEmitter {
-        val emitter = sseRegistry.register(uuid, SseEmitter(0))
+        val emitter = sseRegistry.register(uuid, SseEmitter(5 * 60 * 1000))
         val sb = StringBuilder()
         aiService.test(delay)
             .publishOn(Schedulers.boundedElastic())
@@ -89,7 +89,7 @@ class GenerateService (
 
     @Transactional
     fun generateDiary(delay: Long, uuid: String): SseEmitter {
-        val emitter = sseRegistry.register(uuid, SseEmitter(0))
+        val emitter = sseRegistry.register(uuid, SseEmitter(5 * 60 * 1000))
 
         if (diaryRepository.existsDiaryByUuid(uuid)) {
             try {
