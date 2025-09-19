@@ -39,7 +39,6 @@ class LoggingFilter (
     private val attrReqId = "mdc.reqId"
 
     override fun shouldNotFilterAsyncDispatch() = false
-    override fun shouldNotFilterErrorDispatch() = false
 
     override fun doFilterInternal(
         request: HttpServletRequest,

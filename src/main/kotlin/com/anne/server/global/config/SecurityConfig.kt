@@ -7,8 +7,11 @@ import jakarta.servlet.DispatcherType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.firewall.HttpFirewall
+import org.springframework.security.web.firewall.StrictHttpFirewall
 
 
 @Configuration
@@ -21,6 +24,20 @@ class SecurityConfig (
     private val authenticationEntryPoint: AuthenticationEntryPoint
 
 ) {
+
+    @Bean
+    fun httpFirewall(): HttpFirewall {
+        return StrictHttpFirewall().apply {
+            setAllowSemicolon(true)
+            setAllowUrlEncodedSlash(true)
+            setAllowUrlEncodedDoubleSlash(true)
+        }
+    }
+
+    @Bean
+    fun webSecurityCustomizer(firewall: HttpFirewall) = WebSecurityCustomizer {
+        it.httpFirewall(firewall)
+    }
 
     @Bean
     fun filterChain(http: HttpSecurity) = http
