@@ -5,6 +5,7 @@ import com.anne.server.global.exception.enums.ErrorCode
 import com.anne.server.global.exception.dto.ExceptionResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.MDC
 import org.springframework.http.MediaType
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.AuthenticationEntryPoint
@@ -23,6 +24,7 @@ class AuthenticationEntryPoint (
         authException: AuthenticationException,
     ) {
         val error = ErrorCode.INVALID_TOKEN
+        MDC.put("alert", error.alert.toString())
 
         response.status = error.status.value()
         response.contentType = MediaType.APPLICATION_JSON_VALUE

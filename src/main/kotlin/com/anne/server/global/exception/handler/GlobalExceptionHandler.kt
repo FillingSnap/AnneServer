@@ -26,7 +26,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(CustomException::class)
     private fun handlerCustomException(
         e: CustomException,
-        request: HttpServletRequest,
+        request: HttpServletRequest
     ): ResponseEntity<ExceptionResponse<String>> {
         MDC.put("alert", e.errorCode.alert.toString())
 
@@ -42,8 +42,7 @@ class GlobalExceptionHandler {
     // Resource Not Found
     @ExceptionHandler(NoResourceFoundException::class)
     private fun handlerNoResourceFoundExceptionHandler(
-        e: NoResourceFoundException,
-        request: HttpServletRequest,
+        request: HttpServletRequest
     ): ResponseEntity<ExceptionResponse<String>> {
         val errorCode = ErrorCode.WRONG_URL
         MDC.put("alert", errorCode.alert.toString())
@@ -60,8 +59,7 @@ class GlobalExceptionHandler {
     // HTTP Not Readable
     @ExceptionHandler(HttpMessageNotReadableException::class)
     private fun handlerHttpMessageNotReadableException(
-        e: HttpMessageNotReadableException,
-        request: HttpServletRequest,
+        request: HttpServletRequest
     ): ResponseEntity<ExceptionResponse<String>> {
         MDC.put("alert", false.toString())
 
@@ -77,7 +75,6 @@ class GlobalExceptionHandler {
     // Multifile 용량 제어
     @ExceptionHandler(MaxUploadSizeExceededException::class)
     private fun handlerMaxUploadSizeExceededException(
-        e: MaxUploadSizeExceededException,
         request: HttpServletRequest
     ): ResponseEntity<ExceptionResponse<String>?> {
         val errorCode = ErrorCode.TOO_LARGE_MULTIFILE
@@ -112,7 +109,9 @@ class GlobalExceptionHandler {
         e: MethodArgumentNotValidException,
         request: HttpServletRequest,
     ): ResponseEntity<ExceptionResponse<List<ValidationErrorField>>> {
-        val errors = e.bindingResult.fieldErrors.map { ValidationErrorField(it.field, it.defaultMessage!!) }
+        val errors = e.bindingResult.fieldErrors.map {
+            ValidationErrorField(it.field, it.defaultMessage!!)
+        }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ExceptionResponse(
