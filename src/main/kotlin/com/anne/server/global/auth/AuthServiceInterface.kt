@@ -1,6 +1,6 @@
 package com.anne.server.global.auth
 
-import com.anne.server.domain.user.dto.Payload
+import com.anne.server.domain_temp.user.dto.Payload
 
 interface AuthServiceInterface {
 

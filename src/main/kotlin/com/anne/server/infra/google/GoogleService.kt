@@ -1,6 +1,6 @@
 package com.anne.server.infra.google
 
-import com.anne.server.domain.user.dto.Payload
+import com.anne.server.domain_temp.user.dto.Payload
 import com.anne.server.global.exception.exceptions.CustomException
 import com.anne.server.global.exception.enums.ErrorCode
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier

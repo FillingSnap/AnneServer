@@ -1,6 +1,6 @@
 package com.anne.server.global.auth.fedCM
 
-import com.anne.server.domain.user.dto.Payload
+import com.anne.server.domain_temp.user.dto.Payload
 import com.anne.server.global.auth.AuthServiceInterface
 import com.anne.server.global.exception.exceptions.CustomException
 import com.anne.server.global.exception.enums.ErrorCode
