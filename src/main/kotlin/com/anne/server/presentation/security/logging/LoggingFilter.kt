@@ -1,11 +1,11 @@
-package com.anne.server.global.logging.filter
+package com.anne.server.presentation.security.logging
 
-import com.anne.server.infra.discord.BotService
-import com.anne.server.logger
+import com.anne.server.common.alert.ErrorInfo
+import com.anne.server.common.log.logger
+import com.anne.server.infrastructure.alert.adapter.JdaAdapter
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import net.dv8tion.jda.api.EmbedBuilder
 import org.slf4j.MDC
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
@@ -15,14 +15,14 @@ import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.util.ContentCachingRequestWrapper
 import org.springframework.web.util.ContentCachingResponseWrapper
-import java.awt.Color
 import java.util.UUID
+
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class LoggingFilter (
 
-    private val botService: BotService,
+    private val jdaAdapter: JdaAdapter
 
 ): OncePerRequestFilter() {
 
@@ -55,7 +55,8 @@ class LoggingFilter (
         val isSse = sseUri.any { AntPathMatcher().match(it, requestUri) }
 
         if (isFirst) {
-            val requestId = request.getHeader("X-Request-Id")?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
+            val requestId = request.getHeader("X-Request-Id")?.takeIf { it.isNotBlank() }
+                ?: UUID.randomUUID().toString()
             request.setAttribute(attrReqId, requestId)
             response.setHeader("X-Request-Id", requestId)
         }
@@ -82,7 +83,6 @@ class LoggingFilter (
         val responseWrapper = if (isSse) null else ContentCachingResponseWrapper(response)
         try {
             if (isSse) {
-                // SSE 요청인 경우 결과 로깅은 SseLoggingWrapperClass에서 수행
                 filterChain.doFilter(requestWrapper, response)
             } else {
                 val startTime = System.currentTimeMillis()
@@ -106,22 +106,19 @@ class LoggingFilter (
                     """.trimIndent())
                     val alert = MDC.get("alert")
                     if (alert == null || alert.toBoolean()) {
-                        botService.sendMessage(
-                            "Error",
-                            EmbedBuilder()
-                                .setTitle("[SERVER LOG] Error Notification")
-                                .setColor(Color.RED)
-                                .addField("Request Method & URI", "[$method] $requestUri", false)
-                                .addField("Request Id", clientIp, false)
-                                .addField("HTTP Status", httpStatus.toString(), true)
-                                .addField("Elapsed Time", "${elapsedTime}s", true)
-                                .addField("Client IP", clientIp, false)
-                                .addField("Headers", headers, false)
-                                .addField("Request Params", params.take(1000), false)
-                                .addField("Request Body", requestBody.take(500), false)
-                                .addField("Response Body", responseBody.take(500), false)
-                                .setTimestamp(java.time.OffsetDateTime.now())
-                                .build()
+                        jdaAdapter.alertError(
+                            ErrorInfo(
+                                method = method,
+                                requestUri = request.requestURI,
+                                requestId = request.getAttribute(attrReqId) as String,
+                                httpStatus = httpStatus.toString(),
+                                elapsedTime = elapsedTime,
+                                clientIp = clientIp,
+                                headers = headers,
+                                requestParams = params,
+                                requestBody = requestBody,
+                                responseBody = responseBody
+                            )
                         )
                     }
                 }
