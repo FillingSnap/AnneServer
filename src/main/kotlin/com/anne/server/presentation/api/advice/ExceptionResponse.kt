@@ -1,4 +1,4 @@
-package com.anne.server.global.exception.dto
+package com.anne.server.presentation.api.advice
 
 import org.springframework.http.HttpStatus
 import java.time.LocalDateTime

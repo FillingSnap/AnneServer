@@ -1,10 +1,9 @@
-package com.anne.server.global.exception.handler
+package com.anne.server.presentation.api.advice
 
-import com.anne.server.global.exception.dto.ExceptionResponse
-import com.anne.server.global.exception.enums.ErrorCode
-import com.anne.server.global.exception.exceptions.CustomException
-import com.anne.server.global.validation.dto.ValidationErrorField
-import com.anne.server.logger
+import com.anne.server.common.exception.ErrorCode
+import com.anne.server.common.exception.CustomException
+import com.anne.server.common.log.logger
+import com.anne.server.presentation.validation.dto.ValidationErrorField
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.MDC
 import org.springframework.http.HttpStatus
@@ -34,7 +33,9 @@ class GlobalExceptionHandler {
             ExceptionResponse(
                 status = e.errorCode.status,
                 requestUri = request.requestURI,
-                data = e.errorCode.message
+                data = if (e.errorCode.status == HttpStatus.INTERNAL_SERVER_ERROR)
+                    HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase
+                else e.errorCode.message
             )
         )
     }

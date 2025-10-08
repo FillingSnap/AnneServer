@@ -1,4 +1,4 @@
-package com.anne.server.global.exception.enums
+package com.anne.server.common.exception
 
 import org.springframework.http.HttpStatus
 
@@ -32,7 +32,10 @@ enum class ErrorCode (
     NOT_YOUR_STORY(HttpStatus.BAD_REQUEST, "해당 스토리의 소유자가 아닙니다"),
     NOT_YOUR_DIARY(HttpStatus.BAD_REQUEST, "해당 일기의 소유자가 아닙니다"),
 
-    AWS_S3_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AWS S3에서 에러가 발생했습니다"),
+    ALERT_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알림 서버에 연결할 수 없습니다"),
+    OBJECT_STORAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "오브젝트 스토리지에 연결할 수 없습니다"),
+    IN_MEMORY_DB_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "인메모리 DB에 연결할 수 없습니다"),
+    IS_DRAINING(HttpStatus.INTERNAL_SERVER_ERROR, "Connection Draining 진행 중입니다"),
     DIARY_GENERATE_UNAVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "일기를 생성할 수 없습니다")
     ;
 
