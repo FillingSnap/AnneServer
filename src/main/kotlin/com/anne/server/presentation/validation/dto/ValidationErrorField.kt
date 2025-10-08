@@ -1,4 +1,4 @@
-package com.anne.server.global.validation.dto
+package com.anne.server.presentation.validation.dto
 
 data class ValidationErrorField (
 
@@ -6,5 +6,4 @@ data class ValidationErrorField (
 
     val message: String
 
-) {
-}
+)

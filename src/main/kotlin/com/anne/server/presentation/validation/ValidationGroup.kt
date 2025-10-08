@@ -1,4 +1,4 @@
-package com.anne.server.global.validation
+package com.anne.server.presentation.validation
 
 class ValidationGroup {
 

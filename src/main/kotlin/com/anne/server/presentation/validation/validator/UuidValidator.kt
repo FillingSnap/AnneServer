@@ -1,6 +1,6 @@
-package com.anne.server.global.validation.validator
+package com.anne.server.presentation.validation.validator
 
-import com.anne.server.global.validation.annotation.Uuid
+import com.anne.server.presentation.validation.annotation.Uuid
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 import java.util.regex.Pattern
