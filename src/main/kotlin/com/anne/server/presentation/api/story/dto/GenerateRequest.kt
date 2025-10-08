@@ -1,7 +1,7 @@
-package com.anne.server.domain_temp.story.dto.request
+package com.anne.server.presentation.api.story.dto
 
-import com.anne.server.global.validation.annotation.Uuid
-import com.anne.server.global.validation.ValidationGroup
+import com.anne.server.presentation.validation.ValidationGroup
+import com.anne.server.presentation.validation.annotation.Uuid
 import jakarta.validation.constraints.NotBlank
 
 data class GenerateRequest (
@@ -18,5 +18,4 @@ data class GenerateRequest (
 
     val textList: List<String>?
 
-) {
-}
+)

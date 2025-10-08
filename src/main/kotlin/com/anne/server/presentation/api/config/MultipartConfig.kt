@@ -1,4 +1,4 @@
-package com.anne.server.global.config
+package com.anne.server.presentation.api.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.http.MediaType
