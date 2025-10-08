@@ -1,7 +1,7 @@
-package com.anne.server.global.ops
+package com.anne.server.presentation.api.internal.controller
 
-import com.anne.server.global.config.DrainFlag
-import com.anne.server.global.registry.SseRegistry
+import com.anne.server.infrastructure.lifecycle.DrainFlag
+import com.anne.server.presentation.sse.SseRegistry
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,14 +21,14 @@ class InternalController (
     @Operation(summary = "Connection Draining Start")
     @PostMapping("/drain/start")
     fun startDrain(): Map<String, Boolean> {
-        drainFlag.acceptNew.set(false)
+        drainFlag.setDrainFlag(true)
         return mapOf("acceptNew" to false)
     }
 
     @Operation(summary = "Connection Draining Stop (에러 발생 시 롤백 용도)")
     @PostMapping("/drain/stop")
     fun stopDrain(): Map<String, Boolean> {
-        drainFlag.acceptNew.set(true)
+        drainFlag.setDrainFlag(false)
         return mapOf("acceptNew" to true)
     }
 
@@ -36,7 +36,7 @@ class InternalController (
     @GetMapping("/drain/status")
     fun status() = mapOf(
         "open" to sseRegistry.count(),
-        "acceptNew" to drainFlag.acceptNew.get()
+        "acceptNew" to drainFlag.isDraining()
     )
 
 }

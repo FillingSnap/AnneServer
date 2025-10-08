@@ -1,4 +1,4 @@
-package com.anne.server.global.filter
+package com.anne.server.presentation.api.internal.filter
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest

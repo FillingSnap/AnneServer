@@ -1,4 +1,4 @@
-package com.anne.server.global.registry
+package com.anne.server.presentation.sse
 
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter

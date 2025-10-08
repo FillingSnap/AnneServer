@@ -1,4 +1,4 @@
-package com.anne.server.global.ops
+package com.anne.server.presentation.api.health_check
 
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
