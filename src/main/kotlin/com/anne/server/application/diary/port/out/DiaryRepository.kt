@@ -14,6 +14,6 @@ interface DiaryRepository {
 
     fun save(diary: Diary): Diary
 
-    fun delete(diary: Diary)
+    fun deleteById(id: Long)
 
 }

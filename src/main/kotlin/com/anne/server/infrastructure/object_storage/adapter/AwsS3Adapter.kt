@@ -2,6 +2,7 @@ package com.anne.server.infrastructure.object_storage.adapter
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.DeleteObjectRequest
+import com.amazonaws.services.s3.model.DeleteObjectsRequest
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.anne.server.application.story.port.out.ObjectStorage
 import com.anne.server.common.exception.CustomException

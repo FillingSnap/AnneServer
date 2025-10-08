@@ -45,9 +45,7 @@ class DiaryRepositoryAdapter(
             )
         )
 
-    override fun delete(diary: Diary) =
-        diaryJpaRepository.delete(
-            DiaryMapper.toEntity(diary, userRef)
-        )
+    override fun deleteById(id: Long) =
+        diaryJpaRepository.deleteById(id)
 
 }

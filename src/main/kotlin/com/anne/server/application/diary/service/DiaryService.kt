@@ -2,6 +2,8 @@ package com.anne.server.application.diary.service
 
 import com.anne.server.application.diary.port.`in`.DiaryUseCase
 import com.anne.server.application.diary.port.out.DiaryRepository
+import com.anne.server.application.story.port.out.ObjectStorage
+import com.anne.server.application.story.port.out.StoryRepository
 import com.anne.server.domain.Diary
 import com.anne.server.common.exception.ErrorCode
 import com.anne.server.common.exception.CustomException
@@ -13,7 +15,11 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class DiaryService(
 
-    private val diaryRepository: DiaryRepository
+    private val diaryRepository: DiaryRepository,
+
+    private val storyRepository: StoryRepository,
+
+    private val objectStorage: ObjectStorage
 
 ): DiaryUseCase {
 
@@ -61,7 +67,14 @@ class DiaryService(
                 if (userId != it.userId)
                     throw CustomException(ErrorCode.NOT_YOUR_DIARY)
 
-                diaryRepository.delete(it)
+                val imageList = storyRepository.findAllByUuid(uuid)
+                    .map { story -> story.image }
+
+                diaryRepository.deleteById(it.id!!)
+
+                imageList.forEach { image ->
+                    objectStorage.deleteObject(image)
+                }
             }
             ?: throw CustomException(ErrorCode.DIARY_NOT_FOUND)
 

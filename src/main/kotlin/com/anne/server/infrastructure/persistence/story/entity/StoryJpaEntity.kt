@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 
@@ -31,6 +32,7 @@ class StoryJpaEntity (
     val user: UserJpaEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "diary_id", nullable = true)
     var diary: DiaryJpaEntity? = null
 
 ): BaseTimeEntity()
