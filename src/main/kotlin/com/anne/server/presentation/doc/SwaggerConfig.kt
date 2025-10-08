@@ -1,4 +1,4 @@
-package com.anne.server.global.config
+package com.anne.server.presentation.doc
 
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI
