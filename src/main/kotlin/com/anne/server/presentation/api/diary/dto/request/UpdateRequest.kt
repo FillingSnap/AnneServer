@@ -1,6 +1,6 @@
-package com.anne.server.domain_temp.diary.dto.request
+package com.anne.server.presentation.api.diary.dto.request
 
-import com.anne.server.global.validation.ValidationGroup
+import com.anne.server.presentation.validation.ValidationGroup
 import jakarta.validation.constraints.NotBlank
 
 data class UpdateRequest (
