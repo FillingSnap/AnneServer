@@ -1,4 +1,4 @@
-package com.anne.server.infra.ai.dto
+package com.anne.server.application.diary.dto
 
 data class ImageTextDto (
 

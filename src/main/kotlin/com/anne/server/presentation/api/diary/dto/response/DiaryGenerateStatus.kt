@@ -1,6 +1,6 @@
-package com.anne.server.domain_temp.diary.enums
+package com.anne.server.presentation.api.diary.dto.response
 
-enum class SseStatus (
+enum class DiaryGenerateStatus (
 
     val value: String
 

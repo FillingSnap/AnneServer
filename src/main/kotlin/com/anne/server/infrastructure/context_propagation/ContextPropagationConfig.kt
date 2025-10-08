@@ -1,4 +1,4 @@
-package com.anne.server.global.config
+package com.anne.server.infrastructure.context_propagation
 
 import io.micrometer.context.ContextRegistry
 import io.micrometer.context.ContextSnapshotFactory
