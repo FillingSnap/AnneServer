@@ -1,4 +1,4 @@
-package com.anne.server.global.config
+package com.anne.server.presentation.api.config
 
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
@@ -10,9 +10,9 @@ import java.time.format.DateTimeFormatter
 @Configuration
 class DateFormatConfig {
 
-    private val dateFormat = "yyyy-MM-dd"
+    private final val dateFormat = "yyyy-MM-dd"
 
-    private val dateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+    private final val dateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
 
     @Bean
     fun jackson2ObjectMapperBuilder(): Jackson2ObjectMapperBuilder {
