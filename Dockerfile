@@ -1,17 +1,23 @@
 FROM gradle:7.6-jdk AS build
 WORKDIR /build
+ENV GRADLE_USER_HOME=/gradle
 
-COPY src/main /build/src/main
+COPY gradle gradle
+COPY gradlew build.gradle.kts settings.gradle.kts ./
+RUN chmod +x gradlew
 
-COPY build.gradle.kts settings.gradle.kts /build/
+RUN --mount=type=cache,target=/gradle \
+    --mount=type=cache,target=/root/.gradle \
+    ./gradlew --no-daemon -q help
 
-RUN gradle build -x test --parallel --continue > /dev/null 2>&1 || true
+COPY src ./src
 
-FROM openjdk:17.0.1-jdk-slim AS run
+RUN --mount=type=cache,target=/gradle \
+    --mount=type=cache,target=/root/.gradle \
+    ./gradlew --no-daemon --build-cache --configuration-cache \
+      -x test bootJar
+
+FROM eclipse-temurin:17-jre AS run
 WORKDIR /app
-
-COPY --from=build --chown=app-api:app-api /build/build/libs/*.jar ./app.jar
-
-COPY --from=build --chown=app-api:app-api /build/src/main/resources/json/diary.json ./diary.json
-
-CMD ["java", "-Dspring.profiles.active=${SPRING_PROFILE}", "-jar", "app.jar"]
+COPY --from=build /build/build/libs/*.jar /app/app.jar
+ENTRYPOINT ["java","-jar","/app/app.jar"]
