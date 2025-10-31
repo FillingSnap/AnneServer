@@ -1,12 +1,14 @@
 package com.anne.server.infrastructure.persistence.user.entity
 
 import com.anne.server.infrastructure.persistence.common.BaseTimeEntity
+import jakarta.persistence.CollectionTable
 import jakarta.persistence.ElementCollection
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.Table
 
 @Entity
@@ -24,6 +26,10 @@ class UserJpaEntity(
     val provider: String,
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+        name = "user_style_list",
+        joinColumns = [JoinColumn(name = "user_id")],
+    )
     var styleList: List<String> = ArrayList(),
 
 ): BaseTimeEntity()
